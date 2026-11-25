@@ -32,22 +32,21 @@ def init_db():
     c.commit(); c.close()
 init_db()
 def level_from(h):
-    h=float(h or 0)
-    if h>=100000: return 500
-    if h>=50000: return 100
-    if h>=10000: return 50
-    if h>=1000: return 10
-    if h>=533: return 3
-    if h>=116: return 2
-    return 1
+    h = float(h or 0)
+    if h<=0: return 0
+    if h>=100000000: return 500
+    if h>=61100000: return 401 + int((h-61100000)//389000)
+    if h>=32400000: return 301 + int((h-32400000)//287000)
+    if h>=13200000: return 201 + int((h-13200000)//192000)
+    if h>=2850000: return 101 + int((h-2850000)//103500)
+    return 1 + int(h//28500)
+
 def reward_for(l):
-    if l>=500: return 500000
-    if l>=100: return 100000
-    if l>=50: return 30000
-    if l>=10: return 6000
-    if l>=3: return 854
-    if l>=2: return 690
-    return 600
+    l = int(l or 0)
+    if l<=0: return 0
+    if l>=500: return 1000000
+    return 600 + l*l*4
+
 def get_user(uid, username=""):
     c=db(); cur=c.cursor()
     cur.execute("SELECT * FROM users WHERE user_id=?", (str(uid),))
