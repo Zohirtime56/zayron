@@ -18,6 +18,26 @@ REFERRAL_BONUS = 50
 if not BOT_TOKEN or ":" not in BOT_TOKEN:
     print("ERROR: token.txt missing"); raise SystemExit(1)
 bot = telebot.TeleBot(BOT_TOKEN, parse_mode="Markdown")
+# PythonAnywhere proxy - required on free account
+try:
+    import telebot.apihelper
+    if os.path.exists('/home/zayronbot') or 'PYTHONANYWHERE' in str(os.environ):
+        telebot.apihelper.proxy = {'http': 'http://proxy.server:3128', 'https': 'http://proxy.server:3128'}
+except Exception as _e:
+    print("proxy setup", _e)
+
+def safe_edit(text, chat_id, msg_id, reply_markup=None):
+    # يتجاهل خطأ 400 "exactly the same" - ملي كتورك نفس الزر جوج مرات
+    try:
+        safe_edit(text, chat_id, msg_id, reply_markup=reply_markup)
+        return True
+    except Exception as e:
+        msg = str(e)
+        if 'exactly the same' in msg or 'message is not modified' in msg:
+            return False
+        print("safe_edit error:", e)
+        return False
+
 
 def db():
     c=sqlite3.connect(DB, check_same_thread=False); c.row_factory=sqlite3.Row; return c
@@ -108,22 +128,22 @@ def on_callback(call):
         # تعدين البوت يضيف 100 لنفس الرصيد المشترك
         add_balance(uid, MINE_REWARD)
         me=get_user(uid)
-        bot.edit_message_text(f"✅ صافي عدّنتي في البوت!\n\n💰 ربحتي +{MINE_REWARD} ZYN\n💳 رصيدك الكامل دابا: *{int(me['balance']+me['pending'])} ZYN* (نفس الرصيد في التطبيق)\n\nعدّن في التطبيق باش تربح أكثر ⛏️", chat_id, msg_id, reply_markup=main_keyboard())
+        safe_edit(f"✅ صافي عدّنتي في البوت!\n\n💰 ربحتي +{MINE_REWARD} ZYN\n💳 رصيدك الكامل دابا: *{int(me['balance']+me['pending'])} ZYN* (نفس الرصيد في التطبيق)\n\nعدّن في التطبيق باش تربح أكثر ⛏️", chat_id, msg_id, reply_markup=main_keyboard())
     elif data=="balance":
-        bot.edit_message_text(f"💰 رصيدك الكامل: *{int(total)} ZYN*\n(رصيد {int(me['balance'])} + معلق {int(me['pending'])})\n👥 الإحالات ديالك: {me['referrals']}\n👛 المحفظة: {me['wallet'] or 'مازال ما ربطتيش'}\n🏆 المستوى: {level_from(max(me['onchain'] or 0, me['balance'] or 0))} / 500\n\nنفس الرصيد كيبان في التطبيق.", chat_id, msg_id, reply_markup=main_keyboard())
+        safe_edit(f"💰 رصيدك الكامل: *{int(total)} ZYN*\n(رصيد {int(me['balance'])} + معلق {int(me['pending'])})\n👥 الإحالات ديالك: {me['referrals']}\n👛 المحفظة: {me['wallet'] or 'مازال ما ربطتيش'}\n🏆 المستوى: {level_from(max(me['onchain'] or 0, me['balance'] or 0))} / 500\n\nنفس الرصيد كيبان في التطبيق.", chat_id, msg_id, reply_markup=main_keyboard())
     elif data=="referral":
         link=f"https://t.me/{bot.get_me().username}?start={uid}"
-        bot.edit_message_text(f"👥 الرابط ديالك:\n`{link}`\n\nكل صاحب يدخل منو كتربح +{REFERRAL_BONUS} ZYN، وهو تا هو كيربح +{REFERRAL_BONUS} ZYN.", chat_id, msg_id, reply_markup=main_keyboard())
+        safe_edit(f"👥 الرابط ديالك:\n`{link}`\n\nكل صاحب يدخل منو كتربح +{REFERRAL_BONUS} ZYN، وهو تا هو كيربح +{REFERRAL_BONUS} ZYN.", chat_id, msg_id, reply_markup=main_keyboard())
     elif data=="wallet_help":
-        bot.edit_message_text("👛 باش تربط المحفظة:\n\nصيفط هاد الأمر فالبوت:\n`/wallet UQ... عنوان المحفظة ديالك`\n\nمثال:\n`/wallet UQBIVcSvumdQ1N9P3yHbUUJM...`\n\nلازم تكون محفظة TON، بحال Tonkeeper.", chat_id, msg_id, reply_markup=main_keyboard())
+        safe_edit("👛 باش تربط المحفظة:\n\nصيفط هاد الأمر فالبوت:\n`/wallet UQ... عنوان المحفظة ديالك`\n\nمثال:\n`/wallet UQBIVcSvumdQ1N9P3yHbUUJM...`\n\nلازم تكون محفظة TON، بحال Tonkeeper.", chat_id, msg_id, reply_markup=main_keyboard())
     elif data=="leaderboard":
         c=db(); cur=c.cursor(); cur.execute("SELECT username, balance, pending FROM users ORDER BY balance DESC LIMIT 10"); rows=cur.fetchall(); c.close()
         txt="🏆 المتصدرين Top 10:\n\n"
         for i,(u,b,p) in enumerate(rows,1):
             txt+=f"{i}. @{u or 'user'} - {int((b or 0)+(p or 0))} ZYN\n"
-        bot.edit_message_text(txt, chat_id, msg_id, reply_markup=main_keyboard())
+        safe_edit(txt, chat_id, msg_id, reply_markup=main_keyboard())
     elif data=="tasks":
-        bot.edit_message_text("📋 المهام:\n\nدير المهام في التطبيق باش تربح +500 لكل مهمة.\n\n1️⃣ دخل للغروب ديال ZYRON\n2️⃣ تابعنا فـ X / Telegram\n3️⃣ جيب 5 ديال صحابك", chat_id, msg_id, reply_markup=main_keyboard())
+        safe_edit("📋 المهام:\n\nدير المهام في التطبيق باش تربح +500 لكل مهمة.\n\n1️⃣ دخل للغروب ديال ZYRON\n2️⃣ تابعنا فـ X / Telegram\n3️⃣ جيب 5 ديال صحابك", chat_id, msg_id, reply_markup=main_keyboard())
 
 @bot.message_handler(commands=['wallet'])
 def wallet_cmd(message):
@@ -166,5 +186,12 @@ def withdraw_cmd(message):
     try: bot.send_message(ADMIN_ID, f"💸 طلب سحب جديد\nمن: @{message.from_user.username} ({uid})\nالمبلغ: {amt} ZYN\nالمحفظة: {w}")
     except: pass
 
-print("ZYRON Bot is running... UNIFIED DB")
-bot.infinity_polling()
+print("ZYRON Bot is running... UNIFIED DB v5.2 - safe_edit + auto-retry")
+import time as _time
+while True:
+    try:
+        bot.infinity_polling(timeout=60, long_polling_timeout=60, skip_pending=True)
+    except Exception as e:
+        print("Polling error, retry in 5s:", e)
+        _time.sleep(5)
+
