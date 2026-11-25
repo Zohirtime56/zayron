@@ -8,10 +8,15 @@ import sqlite3
 import time
 import logging
 from datetime import datetime
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
-BOT_TOKEN = "PUT_YOUR_NEW_TOKEN_HERE"
+import os
+BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN","").strip()
+if not BOT_TOKEN:
+    try: BOT_TOKEN = open("token.txt").read().strip()
+    except: BOT_TOKEN = ""
+WEBAPP_URL = "https://zohirtime56.github.io/zayron/"
 ADMIN_ID = 7527825632  # your Telegram ID
 
 # Config - you can change these
@@ -53,6 +58,7 @@ def add_balance(user_id, amount):
 # ---------- KEYBOARD ----------
 def main_keyboard():
     return InlineKeyboardMarkup([
+        [InlineKeyboardButton("⛏️ افتح التعدين / Open Miner", web_app=WebAppInfo(url=WEBAPP_URL))],
         [InlineKeyboardButton("⛏️ تعدين ZYN", callback_data="mine")],
         [InlineKeyboardButton("💰 الرصيد ديالي", callback_data="balance"), InlineKeyboardButton("👥 الإحالات", callback_data="referral")],
         [InlineKeyboardButton("👛 ربط المحفظة", callback_data="wallet_help"), InlineKeyboardButton("🏆 المتصدرين", callback_data="leaderboard")],
@@ -173,6 +179,9 @@ async def stats_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"👥 Users: {c}\n💰 Total points: {s}")
 
 def main():
+    if not BOT_TOKEN or ":" not in BOT_TOKEN:
+        print("ERROR: TELEGRAM_BOT_TOKEN missing in token.txt")
+        return
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CommandHandler("wallet", wallet_cmd))
