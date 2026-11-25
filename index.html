@@ -84,14 +84,44 @@ let walletAddress = localStorage.getItem('zyn_wallet')||"";
 let onchainHolding = Number(localStorage.getItem('zyn_onchain')||0);
 function levelFromHolding(h){ if(h>=100000) return 500; if(h>=50000) return 100; if(h>=10000) return 50; if(h>=1000) return 10; if(h>=533) return 3; if(h>=116) return 2; return 1; }
 function rewardFromHolding(){ let l=levelFromHolding(onchainHolding); if(l===1) return 600; if(l===2) return 690; if(l===3) return 854; if(l===10) return 6000; if(l===50) return 30000; if(l===100) return 100000; return 500000; }
+// Convert raw 0:hex to friendly UQ... for TonAPI
+function rawToFriendly(raw){
+  try{
+    if(!raw) return raw;
+    if(raw.startsWith('UQ')||raw.startsWith('EQ')) return raw;
+    if(!raw.includes(':')) return raw;
+    let parts = raw.split(':');
+    let wc = parseInt(parts[0]);
+    let hex = parts[1];
+    // Build bytes: 1 byte flags + 1 byte wc + 32 bytes hash
+    let bytes = new Uint8Array(36);
+    bytes[0] = 0x11; // bounceable
+    bytes[1] = wc & 0xFF;
+    for(let i=0;i<32;i++){ bytes[2+i] = parseInt(hex.substr(i*2,2),16); }
+    // CRC16 XMODEM
+    let crc = 0;
+    for(let i=0;i<34;i++){ crc ^= bytes[i]<<8; for(let k=0;k<8;k++){ crc = (crc & 0x8000) ? ((crc<<1)^0x1021) & 0xFFFF : (crc<<1) & 0xFFFF; } }
+    bytes[34] = (crc>>8)&0xFF; bytes[35] = crc&0xFF;
+    // base64 url-safe
+    let b64 = btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
+    return 'UQ'+b64.slice(2);
+  }catch(e){ return raw; }
+}
+function shortAddr(a){ let f=rawToFriendly(a); return f.slice(0,6)+'...'+f.slice(-4); }
 async function checkHolding(){
   if(!walletAddress){ document.getElementById('walletMsg').textContent = lang==='ar' ? 'ربط المحفظة أولاً' : 'Connect wallet first'; return; }
   document.getElementById('walletMsg').textContent = lang==='ar' ? 'جارٍ التحقق من البلوكتشين...' : 'Checking blockchain...';
   try{
-    let r = await fetch('https://tonapi.io/v2/accounts/'+walletAddress+'/jettons');
+    let friendly = rawToFriendly(walletAddress);
+    document.getElementById('walletAddr').textContent = shortAddr(walletAddress);
+    let r = await fetch('https://tonapi.io/v2/accounts/'+friendly+'/jettons');
     let j = await r.json();
     let found = 0;
-    if(j.balances){ for(let b of j.balances){ if(b.jetton && b.jetton.address===JETTON_MASTER){ found = Number(b.balance)/1e9; } } }
+    if(j.balances){ for(let b of j.balances){ let sym=(b.jetton&&b.jetton.symbol)||''; let nm=(b.jetton&&b.jetton.name)||''; let addr=(b.jetton&&b.jetton.address)||''; if(sym==='ZYN' || nm==='ZYN' || nm.toUpperCase().includes('ZYRON') || addr===JETTON_MASTER){ found = Number(b.balance)/1e9; } } }
+    // Fallback: try raw address too if 0
+    if(found===0){
+      try{ let r2 = await fetch('https://tonapi.io/v2/accounts/'+walletAddress+'/jettons'); let j2 = await r2.json(); if(j2.balances){ for(let b of j2.balances){ let sym=(b.jetton&&b.jetton.symbol)||''; if(sym==='ZYN'){ found = Number(b.balance)/1e9; } } } }catch(e2){}
+    }
     onchainHolding = Math.floor(found);
     localStorage.setItem('zyn_onchain', onchainHolding);
     // Level now comes from on-chain holding, but keep app balance for mining display
@@ -120,11 +150,11 @@ function initTonConnect(){
       if(w && w.account && w.account.address){
         walletAddress = w.account.address;
         localStorage.setItem('zyn_wallet', walletAddress);
-        document.getElementById('walletAddr').textContent = walletAddress.slice(0,6)+'...'+walletAddress.slice(-4);
+        document.getElementById('walletAddr').textContent = shortAddr(walletAddress);
         checkHolding();
       }
     });
-    if(walletAddress){ document.getElementById('walletAddr').textContent = walletAddress.slice(0,6)+'...'+walletAddress.slice(-4); document.getElementById('walletHold').textContent = onchainHolding.toLocaleString(); document.getElementById('walletLevel').textContent = levelFromHolding(onchainHolding)+' / 500'; }
+    if(walletAddress){ document.getElementById('walletAddr').textContent = shortAddr(walletAddress); document.getElementById('walletHold').textContent = onchainHolding.toLocaleString(); document.getElementById('walletLevel').textContent = levelFromHolding(onchainHolding)+' / 500'; }
   }catch(e){ console.log('tonconnect err', e); }
 }
 setTimeout(initTonConnect, 800);
