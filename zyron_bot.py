@@ -1,7 +1,21 @@
 import os, json, telebot
-TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+# Token: first try env, then token.txt (persists across consoles)
+TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+if not TOKEN:
+    try:
+        TOKEN = open("token.txt").read().strip()
+    except:
+        TOKEN = ""
 WEBAPP_URL = "https://zohirtime56.github.io/zayron/"
-ADMIN_ID = os.environ.get("ADMIN_ID", "")
+ADMIN_ID = os.environ.get("ADMIN_ID", "").strip()
+if not ADMIN_ID:
+    try:
+        ADMIN_ID = open("admin.txt").read().strip()
+    except:
+        ADMIN_ID = ""
+if not TOKEN or ":" not in TOKEN:
+    print("ERROR: TELEGRAM_BOT_TOKEN is missing. Create token.txt with your bot token.")
+    raise SystemExit("Missing TELEGRAM_BOT_TOKEN")
 bot = telebot.TeleBot(TOKEN)
 DATA_FILE = "zyron_data.json"
 def load():
