@@ -398,15 +398,19 @@ function connectWallet(fresh){
   },15000);
   try{ tc.openModal(); }catch(e){ showConnecting(false); showConnectFail(true); }
 }
-async function disconnectWallet(){
-  try{ if(window.tc?.disconnect) await tc.disconnect(); }catch(e){}
-  clearTonStorage();
+let tcReady=false;
+async function resetWalletState(){
   clearTimeout(connectTimer);
   walletAddr=''; state.onchain=0; state.level=1;
   showConnecting(false); showConnectFail(false);
-  try{ await api('/api/update_onchain',{user_id:userId, onchain:0, wallet:''}); }catch(e){}
-  toast(t('disconnected'));
+  for(let i=0;i<3;i++){ try{ const r=await api('/api/update_onchain',{user_id:userId, onchain:0, wallet:''}); if(r&&r.ok) break; }catch(e){} await new Promise(r=>setTimeout(r,1000)); }
   render();
+}
+async function disconnectWallet(){
+  try{ if(window.tc?.disconnect) await tc.disconnect(); }catch(e){}
+  clearTonStorage();
+  await resetWalletState();
+  toast(t('disconnected'));
 }
 async function checkOnchain(){
   if(!walletAddr){ toast(t('connectFirst')); return; }
@@ -455,7 +459,14 @@ if(window.TON_CONNECT_UI?.TonConnectUI){
     tc.onStatusChange(w=>{
       clearTimeout(connectTimer);
       if(w){ walletAddr=w.account.address; showConnecting(false); showConnectFail(false); render(); checkOnchain(); }
-      else { walletAddr=''; showConnecting(false); render(); }
+      else {
+        // external disconnect (TonConnect menu / Tonkeeper): same reset as disconnectWallet, without calling tc.disconnect again
+        const had = tcReady && (walletAddr || state.onchain>0);
+        tcReady=true;
+        if(had) resetWalletState().then(()=>toast(t('disconnected')));
+        else { walletAddr=''; showConnecting(false); render(); }
+      }
+      tcReady=true;
     });
   }catch(e){ console.warn('TonConnect init failed', e); }
 }else{
@@ -465,5 +476,5 @@ if(window.TON_CONNECT_UI?.TonConnectUI){
 applyI18n();
 auth();
 setInterval(()=>{ if(state.mining) render(); }, 1000);
-setInterval(async()=>{ try{ const a=await api('/api/auth',{uid:userId, username}); if(a.ok){ applyUser(a.user); showApiErr(false); } }catch(e){ showApiErr(true); } render(); }, 30000);
+setInterval(async()=>{ try{ const a=await api('/api/auth',{uid:userId, username}); if(a.ok){ if(tcReady && !walletAddr && a.user.onchain>0){ a.user.onchain=0; a.user.level=1; resetWalletState(); } applyUser(a.user); showApiErr(false); } }catch(e){ showApiErr(true); } render(); }, 30000);
 </script></body></html>
