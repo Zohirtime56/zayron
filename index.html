@@ -4,7 +4,7 @@
 
 
 <div class="card" style="border-color:#ffd700">
-<h3 id="walletTitle">🔗 محفظة TON - ربط المحفظة</h3>
+<h3 id="walletTitle">🔗 محفظة TON - ربط المحفظة <span style="font-size:10px;background:#00e676;color:#000;padding:2px 6px;border-radius:999px">v3.2</span></h3>
 <div id="ton-connect"></div>
 <button class="btn-gold" id="connectWalletBtn" onclick="manualConnect()" style="margin-top:10px">🔗 ربط محفظة Tonkeeper</button>
 <button class="btn-blue" onclick="openTonkeeper()" style="margin-top:8px">📱 فتح Tonkeeper</button>
@@ -76,7 +76,15 @@ function fallbackCopy(txt){ let ta=document.createElement('textarea'); ta.value=
 function shareRef(){ let link=refLink(); let txt=lang==='ar'?'⛏️ عدّن ZYRON مجاناً معي':'⛏️ Mine ZYRON for free with me'; window.open('https://t.me/share/url?url='+encodeURIComponent(link)+'&text='+encodeURIComponent(txt),'_blank'); document.getElementById('refMsg').textContent=T[lang].shared; }
 function doTask(b,amt,key){ if(localStorage.getItem('zyn_task_'+key)) return; localStorage.setItem('zyn_task_'+key,'1'); b.textContent='✓'; b.className='done'; b.disabled=true; bal+=amt; localStorage.setItem('zyn',bal); render(); document.getElementById('taskMsg').textContent=T[lang].taskDone+' +'+amt; }
 function buyBoost(mult,price){ let t=T[lang]; document.getElementById('boostErr').textContent=''; if(bal<price){ document.getElementById('boostErr').textContent=t.boostNo; return; } if(boost>=mult && mult!==10){ /* allow upgrade only */ } bal-=price; boost=mult; localStorage.setItem('zyn',bal); localStorage.setItem('zyn_boost',boost); render(); document.getElementById('boostMsg').textContent=t.boostOk+' x'+mult; try{ if(window.Telegram?.WebApp?.sendData) window.Telegram.WebApp.sendData(JSON.stringify({type:'boost',mult:mult,price:price})); }catch(e){} }
-function doWithdraw(){ let t=T[lang]; let addr=document.getElementById('wdAddr').value.trim(); let amt=Number(document.getElementById('wdAmt').value); document.getElementById('wdMsg').textContent=''; document.getElementById('wdErr').textContent=''; if(!(addr.startsWith('UQ')||addr.startsWith('EQ'))||addr.length<40){ document.getElementById('wdErr').textContent=t.wdErrAddr; return; } if(!amt||amt<10000||amt>bal){ document.getElementById('wdErr').textContent=amt<10000?t.wdErrAmt:t.wdErrBal; return; } bal-=amt; localStorage.setItem('zyn',bal); let h=JSON.parse(localStorage.getItem('zyn_wd')||'[]'); h.unshift({amt:amt,addr:addr,time:Date.now()}); localStorage.setItem('zyn_wd',JSON.stringify(h)); document.getElementById('wdAmt').value=''; document.getElementById('wdAddr').value=''; render(); document.getElementById('wdMsg').textContent=t.wdOk+' • '+amt.toLocaleString()+' ZYN'; try{ if(window.Telegram?.WebApp?.sendData) window.Telegram.WebApp.sendData(JSON.stringify({type:'withdraw',amount:amt,wallet:addr,uid:uid})); }catch(e){} }
+function doWithdraw(){ let t=T[lang]; let addr=document.getElementById('wdAddr').value.trim(); let amt=Number(document.getElementById('wdAmt').value); document.getElementById('wdMsg').textContent=''; document.getElementById('wdErr').textContent=''; if(!(addr.startsWith('UQ')||addr.startsWith('EQ'))||addr.length<40){ document.getElementById('wdErr').textContent=t.wdErrAddr; return; } if(!amt||amt<10000||amt>bal){ document.getElementById('wdErr').textContent=amt<10000?t.wdErrAmt:t.wdErrBal; return; } bal-=amt; localStorage.setItem('zyn',bal); let h=JSON.parse(localStorage.getItem('zyn_wd')||'[]'); h.unshift({amt:amt,addr:addr,time:Date.now()}); localStorage.setItem('zyn_wd',JSON.stringify(h)); document.getElementById('wdAmt').value=''; document.getElementById('wdAddr').value=''; render(); document.getElementById('wdMsg').textContent=t.wdOk+' • '+amt.toLocaleString()+' ZYN'; 
+  // FIX: Menu Button WebApps cannot use sendData - use deep-link to bot instead
+  try{ if(window.Telegram?.WebApp?.sendData){ window.Telegram.WebApp.sendData(JSON.stringify({type:'withdraw',amount:amt,wallet:addr,uid:uid})); } }catch(e){}
+  // Always show a button to send request to bot via start param
+  let code = 'wd_'+amt+'_'+addr;
+  let link = 'https://t.me/ZyronMinerBot?start='+code;
+  let wdMsgEl = document.getElementById('wdMsg');
+  wdMsgEl.innerHTML = t.wdOk+' • '+amt.toLocaleString()+' ZYN<br><br><button onclick="window.open(\''+link+'\',\'_blank\')" style="background:#2e7dff;color:#fff;border:0;padding:12px;border-radius:10px;font-weight:900;width:100%">📩 اضغط هنا لإرسال الطلب للبوت</button><br><small style="opacity:.7">اضغط على الزر، وغادي يوصلك تأكيد في البوت</small>';
+}
 
 // ---- TON CONNECT + HOLDING LEVEL (Method 2) ----
 const JETTON_MASTER = "EQAJruUqgQTd-KC3QiUAoQePVzW7KubQaXcEqlhdOb4ghwyk";
@@ -111,51 +119,44 @@ function shortAddr(a){ let f=rawToFriendly(a); return f.slice(0,6)+'...'+f.slice
 async function checkHolding(){
   if(!walletAddress){ document.getElementById('walletMsg').textContent = lang==='ar' ? 'ربط المحفظة أولاً' : 'Connect wallet first'; return; }
   document.getElementById('walletMsg').textContent = lang==='ar' ? 'جارٍ التحقق من البلوكتشين...' : 'Checking blockchain...';
+  let friendly = rawToFriendly(walletAddress);
+  // TON Connect gives raw 0:..., but TonCenter wants friendly UQ/EQ - try both
+  // Also try the UQ shown in TonConnect button if available
+  try{ let btnAddr = document.querySelector('#ton-connect'); }catch(e){}
+  document.getElementById('walletAddr').textContent = shortAddr(walletAddress) + ' | ' + friendly.slice(0,8);
+  let found = -1;
+  // 1) TonCenter v3 - direct jetton wallet query (most reliable)
   try{
-    let friendly = rawToFriendly(walletAddress);
-    document.getElementById('walletAddr').textContent = shortAddr(walletAddress);
-    let r = await fetch('https://tonapi.io/v2/accounts/'+friendly+'/jettons');
-    let j = await r.json();
-    let found = 0;
-    if(j.balances){ for(let b of j.balances){ let sym=(b.jetton&&b.jetton.symbol)||''; let nm=(b.jetton&&b.jetton.name)||''; let addr=(b.jetton&&b.jetton.address)||''; if(sym==='ZYN' || nm==='ZYN' || nm.toUpperCase().includes('ZYRON') || addr===JETTON_MASTER){ found = Number(b.balance)/1e9; } } }
-    // Fallback: try raw address too if 0
-    if(found===0){
-      try{ let r2 = await fetch('https://tonapi.io/v2/accounts/'+walletAddress+'/jettons'); let j2 = await r2.json(); if(j2.balances){ for(let b of j2.balances){ let sym=(b.jetton&&b.jetton.symbol)||''; if(sym==='ZYN'){ found = Number(b.balance)/1e9; } } } }catch(e2){}
+    let url1 = 'https://toncenter.com/api/v3/jetton/wallets?owner_address='+encodeURIComponent(friendly)+'&jetton_address='+encodeURIComponent(JETTON_MASTER)+'&limit=5';
+    let r1 = await fetch(url1);
+    let j1 = await r1.json();
+    if(j1.jetton_wallets && j1.jetton_wallets.length>0){ found = Number(j1.jetton_wallets[0].balance)/1e9; }
+    else if(j1.jetton_wallets && j1.jetton_wallets.length===0){
+      // Try with raw address
+      let r1b = await fetch('https://toncenter.com/api/v3/jetton/wallets?owner_address='+encodeURIComponent(walletAddress)+'&jetton_address='+encodeURIComponent(JETTON_MASTER));
+      let j1b = await r1b.json();
+      if(j1b.jetton_wallets && j1b.jetton_wallets.length>0){ found = Number(j1b.jetton_wallets[0].balance)/1e9; }
     }
-    onchainHolding = Math.floor(found);
-    localStorage.setItem('zyn_onchain', onchainHolding);
-    // Level now comes from on-chain holding, but keep app balance for mining display
-    document.getElementById('walletHold').textContent = onchainHolding.toLocaleString();
-    document.getElementById('walletLevel').textContent = levelFromHolding(onchainHolding)+' / 500';
-    document.getElementById('walletMsg').textContent = (lang==='ar' ? 'تم التحديث ✅ محفوظ: ' : 'Updated ✅ Holding: ') + onchainHolding.toLocaleString() + ' ZYN';
-    // Update main mining rate to use on-chain level
-    render();
-  }catch(e){ document.getElementById('walletMsg').textContent = 'خطأ في الاتصال، حاول مرة أخرى'; }
-}
-let tcInstance=null;
-async function manualConnect(){
-  try{
-    if(!tcInstance){ tcInstance = new TON_CONNECT_UI.TonConnectUI({ manifestUrl: 'https://zohirtime56.github.io/zayron/tonconnect-manifest.json', buttonRootId: 'ton-connect' }); }
-    await tcInstance.connectWallet();
-    document.getElementById('walletMsg').textContent = lang==='ar' ? 'تم ربط المحفظة ✅' : 'Wallet connected ✅';
-  }catch(e){ document.getElementById('walletMsg').textContent = 'افتح Tonkeeper ووافق على الربط'; }
-}
-function openTonkeeper(){
-  window.open('https://tonkeeper.com/','_blank');
-}
-function initTonConnect(){
-  try{
-    tcInstance = new TON_CONNECT_UI.TonConnectUI({ manifestUrl: 'https://zohirtime56.github.io/zayron/tonconnect-manifest.json', buttonRootId: 'ton-connect' });
-    tcInstance.onStatusChange(w=>{
-      if(w && w.account && w.account.address){
-        walletAddress = w.account.address;
-        localStorage.setItem('zyn_wallet', walletAddress);
-        document.getElementById('walletAddr').textContent = shortAddr(walletAddress);
-        checkHolding();
-      }
-    });
-    if(walletAddress){ document.getElementById('walletAddr').textContent = shortAddr(walletAddress); document.getElementById('walletHold').textContent = onchainHolding.toLocaleString(); document.getElementById('walletLevel').textContent = levelFromHolding(onchainHolding)+' / 500'; }
-  }catch(e){ console.log('tonconnect err', e); }
+  }catch(e1){ console.log('toncenter fail', e1); }
+  // 2) TonAPI fallback
+  if(found===-1 || found===0){
+    try{
+      let r = await fetch('https://tonapi.io/v2/accounts/'+friendly+'/jettons');
+      let j = await r.json();
+      if(j.balances){ for(let b of j.balances){ let sym=(b.jetton&&b.jetton.symbol)||''; let nm=(b.jetton&&b.jetton.name)||''; if(sym==='ZYN' || nm==='ZYN' || (nm||'').toUpperCase().includes('ZYRON')){ found = Number(b.balance)/1e9; } } }
+    }catch(e2){ console.log('tonapi fail', e2); }
+  }
+  if(found===-1) found = 0;
+  onchainHolding = Math.floor(found);
+  localStorage.setItem('zyn_onchain', onchainHolding);
+  document.getElementById('walletHold').textContent = onchainHolding.toLocaleString();
+  document.getElementById('walletLevel').textContent = levelFromHolding(onchainHolding)+' / 500';
+  document.getElementById('walletMsg').textContent = (lang==='ar' ? 'تم التحديث ✅ محفوظ: ' : 'Updated ✅ Holding: ') + onchainHolding.toLocaleString() + ' ZYN | عنوان: ' + friendly.slice(0,10)+'...';
+  // Show debug if still 0
+  if(onchainHolding===0){
+    document.getElementById('walletMsg').textContent += ' | إذا كان عندك رصيد، جرب: 1) افتح الرابط في المتصفح وليس داخل تيليغرام 2) امسح الكاش';
+  }
+  render();
 }
 setTimeout(initTonConnect, 800);
 
