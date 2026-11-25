@@ -1,25 +1,31 @@
 <!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>ZYRON Miner</title><script src="https://telegram.org/js/telegram-web-app.js"></script><script src="https://unpkg.com/@tonconnect/ui@2.0.6/dist/tonconnect-ui.min.js"></script>
-<style>*{box-sizing:border-box}body{margin:0;font-family:system-ui;background:#070a14;color:#fff;padding:14px;padding-bottom:95px}.top{display:flex;justify-content:space-between;align-items:center}.logo{display:flex;gap:10px;align-items:center}.logo b{font-size:20px}.logo span{width:42px;height:42px;background:linear-gradient(135deg,#ffd700,#ff9d00);border-radius:50%;display:grid;place-items:center;font-size:22px;color:#000;font-weight:900}.lang button{background:#1a2138;color:#fff;border:1px solid #2a3355;padding:7px 10px;border-radius:999px;font-size:12px}.lang button.active{background:#ffd700;color:#000;font-weight:800}.hero{background:linear-gradient(160deg,#1a2138,#0f152a 55%,#1a1400);border:1px solid #2a3355;border-radius:24px;padding:18px;margin-top:14px}.league{display:inline-block;background:#ffd700;color:#000;font-size:11px;font-weight:900;padding:5px 10px;border-radius:999px}.bal{font-size:44px;font-weight:900;margin:10px 0 2px}.bal small{font-size:16px;color:#ffd700}.sub{opacity:.7;font-size:12px}.progress{height:10px;background:#0a0f20;border-radius:999px;overflow:hidden;margin:12px 0 6px}.bar{height:100%;background:linear-gradient(90deg,#ffd700,#ff9d00);width:2%}.row2{display:flex;justify-content:space-between;font-size:12px;opacity:.8}.mine-wrap{display:flex;justify-content:center;margin:18px 0 6px}.mine{width:175px;height:175px;border-radius:50%;border:6px solid #ffd700;background:radial-gradient(circle at 35% 30%,#fff3a0,#ffd700 45%,#b77900);color:#000;font-weight:900;font-size:19px;cursor:pointer;box-shadow:0 0 0 10px #ffd70022,0 20px 40px #00000080}.mine.mining{animation:pulse 1.2s infinite}.mine small{display:block;font-size:12px}@keyframes pulse{0%{box-shadow:0 0 0 10px #ffd70022}50%{box-shadow:0 0 0 20px #ffd70011}100%{box-shadow:0 0 0 10px #ffd70022}}.card{background:#10182e;border:1px solid #2a3355;border-radius:18px;padding:14px;margin-top:12px}.card h3{margin:0 0 8px;font-size:15px}.btn{width:100%;background:#ffd700;color:#000;border:0;padding:12px;border-radius:12px;font-weight:900;font-size:15px;cursor:pointer;margin-top:8px}.btn.ghost{background:#1a2138;color:#fff;border:1px solid #2a3355}.btn:disabled{opacity:.5}.inp{width:100%;background:#070a14;color:#fff;border:1px solid #2a3355;padding:12px;border-radius:12px;margin-top:8px}.tabs{position:fixed;bottom:0;left:0;right:0;background:#0a0f20;border-top:1px solid #2a3355;display:flex;padding:10px}.tabs button{flex:1;background:transparent;color:#fff;border:0;padding:10px;border-radius:12px}.tabs button.active{background:#ffd700;color:#000;font-weight:900}.hidden{display:none}.small{font-size:12px;opacity:.7;line-height:1.6}.boost-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.boost-grid button{background:#1a2138;color:#fff;border:1px solid #2a3355;border-radius:12px;padding:12px;font-weight:800}.boost-grid button.active{background:#ffd700;color:#000}.flex{display:flex;gap:8px}.flex>*{flex:1}</style></head><body>
-<div class="top"><div class="logo"><span>Z</span><div><b>ZYRON</b><div style="font-size:11px;opacity:.7">ZYRON Miner • v4.0 Secure</div></div></div><div class="lang"><button id="arBtn" class="active" onclick="setLang('ar')">العربية</button><button id="enBtn" onclick="setLang('en')">EN</button></div></div>
-<div class="hero"><span class="league" id="leagueLabel">🥉 BRONZE</span><div class="bal"><span id="balance">0</span> <small>ZYN</small></div><div class="sub" id="pendingTxt">المعلق: 0 ZYN • المستوى: 1 / 500</div><div class="progress"><div class="bar" id="bar"></div></div><div class="row2"><span id="holdTxt">المحفوظ في المحفظة: 0 ZYN</span><span id="walletTxt">المحفظة: غير مربوطة</span></div><div class="mine-wrap"><button class="mine" id="mineBtn" onclick="toggleMine()">⛏️ <span id="mineLabel">ابدأ التعدين</span><small id="rateTxt">600 ZYN / يوم</small></button></div><button class="btn ghost" onclick="claim()">💰 تحصيل المعلق</button></div>
+<style>*{box-sizing:border-box}body{margin:0;font-family:system-ui;background:#070a14;color:#fff;padding:14px;padding-bottom:95px}.top{display:flex;justify-content:space-between;align-items:center}.logo{display:flex;gap:10px;align-items:center}.logo b{font-size:20px}.logo span{width:42px;height:42px;background:linear-gradient(135deg,#ffd700,#ff9d00);border-radius:50%;display:grid;place-items:center;font-size:22px;color:#000;font-weight:900}.lang button{background:#1a2138;color:#fff;border:1px solid #2a3355;padding:7px 10px;border-radius:999px;font-size:12px}.lang button.active{background:#ffd700;color:#000;font-weight:800}.hero{background:linear-gradient(160deg,#1a2138,#0f152a 55%,#1a1400);border:1px solid #2a3355;border-radius:24px;padding:18px;margin-top:14px}.league{display:inline-block;background:#ffd700;color:#000;font-size:11px;font-weight:900;padding:5px 10px;border-radius:999px}.bal{font-size:44px;font-weight:900;margin:10px 0 2px}.bal small{font-size:16px;color:#ffd700}.sub{opacity:.7;font-size:12px}.progress{height:10px;background:#0a0f20;border-radius:999px;overflow:hidden;margin:12px 0 6px}.bar{height:100%;background:linear-gradient(90deg,#ffd700,#ff9d00);width:2%}.row2{display:flex;justify-content:space-between;font-size:12px;opacity:.8}.mine-wrap{display:flex;justify-content:center;margin:18px 0 6px}.mine{width:175px;height:175px;border-radius:50%;border:6px solid #ffd700;background:radial-gradient(circle at 35% 30%,#fff3a0,#ffd700 45%,#b77900);color:#000;font-weight:900;font-size:19px;cursor:pointer;box-shadow:0 0 0 10px #ffd70022,0 20px 40px #00000080}.mine.mining{animation:pulse 1.2s infinite}.mine small{display:block;font-size:12px}@keyframes pulse{0%{box-shadow:0 0 0 10px #ffd70022}50%{box-shadow:0 0 0 20px #ffd70011}100%{box-shadow:0 0 0 10px #ffd70022}}.card{background:#10182e;border:1px solid #2a3355;border-radius:18px;padding:14px;margin-top:12px}.card h3{margin:0 0 8px;font-size:15px}.btn{width:100%;background:#ffd700;color:#000;border:0;padding:12px;border-radius:12px;font-weight:900;font-size:15px;cursor:pointer;margin-top:8px}.btn.ghost{background:#1a2138;color:#fff;border:1px solid #2a3355}.btn:disabled{opacity:.5}.inp{width:100%;background:#070a14;color:#fff;border:1px solid #2a3355;padding:12px;border-radius:12px;margin-top:8px}.tabs{position:fixed;bottom:0;left:0;right:0;background:#0a0f20;border-top:1px solid #2a3355;display:flex;padding:10px}.tabs button{flex:1;background:transparent;color:#fff;border:0;padding:10px;border-radius:12px}.tabs button.active{background:#ffd700;color:#000;font-weight:900}.hidden{display:none}.small{font-size:12px;opacity:.7;line-height:1.6}.boost-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}.boost-grid button{background:#1a2138;color:#fff;border:1px solid #2a3355;border-radius:12px;padding:12px;font-weight:800}.boost-grid button.active{background:#ffd700;color:#000}.flex{display:flex;gap:8px}.flex>*{flex:1}.notice{background:#1a2a00;border:1px solid #4a6a00;border-radius:12px;padding:10px;font-size:12px;line-height:1.6;margin-top:10px}</style></head><body>
+<div class="top"><div class="logo"><span>Z</span><div><b>ZYRON</b><div style="font-size:11px;opacity:.7">ZYRON Miner • v4.1 يعمل بدون خادم</div></div></div><div class="lang"><button id="arBtn" class="active" onclick="setLang('ar')">العربية</button><button id="enBtn" onclick="setLang('en')">EN</button></div></div>
+<div class="hero"><span class="league" id="leagueLabel">🥉 BRONZE</span><div class="bal"><span id="balance">0</span> <small>ZYN</small></div><div class="sub" id="pendingTxt">المعلق: 0 ZYN • المستوى: 1 / 500</div><div class="progress"><div class="bar" id="bar"></div></div><div class="row2"><span id="holdTxt">المحفوظ في المحفظة: 0 ZYN</span><span id="walletTxt">المحفظة: غير مربوطة</span></div><div class="mine-wrap"><button class="mine" id="mineBtn" onclick="toggleMine()">⛏️ <span id="mineLabel">ابدأ التعدين</span><small id="rateTxt">600 ZYN / يوم</small></button></div><button class="btn ghost" onclick="claim()">💰 تحصيل المعلق</button><div class="notice" id="mineHint">اضغط على الزر لبدء التعدين. التعدين يعمل في هاتفك ويستمر حتى عند إغلاق التطبيق.</div></div>
 <div id="tab-home">
-<div class="card"><h3 id="tWallet">🔗 محفظة TON</h3><div id="tonconnect"></div><div class="small" id="walletHint">اربط محفظتك داخل تيليغرام ليرى التطبيق رصيدك الحقيقي من ZYN ويحدد مستواك.</div><button class="btn ghost" onclick="checkOnchain()">🔄 تحقق من رصيد المحفظة</button></div>
-<div class="card"><h3 id="tTasks">🎯 المهام - اربح ZYN</h3><div class="small" id="tasksTxt">أنجز المهام وخذ مكافأة مرة واحدة.</div><div class="flex"><button class="btn ghost" onclick="doTask('ch')">📢 القناة +500</button><button class="btn ghost" onclick="doTask('grp')">👥 المجموعة +500</button></div><div class="flex"><button class="btn ghost" onclick="doTask('x')">𝕏 تابعنا +500</button><button class="btn ghost" onclick="doTask('inv')">👤 دعوة صديق +1000</button></div></div>
+<div class="card"><h3 id="tWallet">🔗 محفظة TON</h3><div id="tonconnect"></div><div class="small" id="walletHint">اربط محفظتك ليرى التطبيق رصيدك الحقيقي من ZYN ويحدد مستواك. المستوى يعتمد على رصيدك في المحفظة.</div><button class="btn ghost" onclick="checkOnchain()">🔄 تحقق من رصيد المحفظة</button><div class="small" id="onchainMsg"></div></div>
+<div class="card"><h3 id="tTasks">🎯 المهام - اربح ZYN</h3><div class="small" id="tasksTxt">أنجز المهام وخذ مكافأة مرة واحدة.</div><div class="flex"><button class="btn ghost" id="task-ch" onclick="doTask('ch')">📢 القناة +500</button><button class="btn ghost" id="task-grp" onclick="doTask('grp')">👥 المجموعة +500</button></div><div class="flex"><button class="btn ghost" id="task-x" onclick="doTask('x')">𝕏 تابعنا +500</button><button class="btn ghost" id="task-inv" onclick="doTask('inv')">👤 دعوة صديق +1000</button></div></div>
 </div>
-<div id="tab-withdraw" class="hidden"><div class="card"><h3>💸 سحب - يدوي وآمن</h3><div class="small">الحد الأدنى: 10,000 ZYN • السحب يدوي، يرسله المدير من Tonkeeper بعد المراجعة.</div><input class="inp" id="wdAmount" type="number" placeholder="المبلغ - مثال: 10000"><input class="inp" id="wdWallet" placeholder="محفظة TON - UQ... أو EQ..."><button class="btn" onclick="doWithdraw()">طلب سحب</button><div class="small" id="wdMsg"></div></div></div>
-<div id="tab-boost" class="hidden"><div class="card"><h3>🚀 تعزيز التعدين</h3><div class="small" id="boostTxt">التعزيز الحالي: x1 • اختر تعزيزا، يخصم من رصيدك في السيرفر.</div><div class="boost-grid"><button onclick="buyBoost(2)">x2<br>1,000 ZYN</button><button onclick="buyBoost(5)">x5<br>5,000 ZYN</button><button onclick="buyBoost(10)">x10<br>10,000 ZYN</button></div></div></div>
+<div id="tab-withdraw" class="hidden"><div class="card"><h3>💸 سحب - يدوي وآمن</h3><div class="small">الحد الأدنى: 10,000 ZYN • السحب يدوي، يرسله المدير من Tonkeeper بعد المراجعة. عند طلب السحب سيتم فتح البوت لإرسال الطلب.</div><input class="inp" id="wdAmount" type="number" placeholder="المبلغ - مثال: 10000"><input class="inp" id="wdWallet" placeholder="محفظة TON - UQ... أو EQ..."><button class="btn" onclick="doWithdraw()">طلب سحب</button><div class="small" id="wdMsg"></div></div></div>
+<div id="tab-boost" class="hidden"><div class="card"><h3>🚀 تعزيز التعدين</h3><div class="small" id="boostTxt">التعزيز الحالي: x1</div><div class="boost-grid"><button onclick="buyBoost(2)">x2<br>1,000 ZYN</button><button onclick="buyBoost(5)">x5<br>5,000 ZYN</button><button onclick="buyBoost(10)">x10<br>10,000 ZYN</button></div><div class="small">التعزيز يخصم من رصيدك داخل التطبيق ويزيد سرعة التعدين.</div></div></div>
 <div id="tab-ref" class="hidden"><div class="card"><h3>👥 الإحالة</h3><div class="small" id="refInfo">إحالاتك: 0 • أرباح الإحالة: 0 ZYN • كل صديق: +50 ZYN + 10% من تعدينه</div><input class="inp" id="refLink" readonly><button class="btn" onclick="copyRef()">📋 نسخ رابط الإحالة</button></div></div>
 <div class="tabs"><button class="active" onclick="showTab('home',this)">🏠 <span>الرئيسية</span></button><button onclick="showTab('withdraw',this)">💸 <span>سحب</span></button><button onclick="showTab('boost',this)">🚀 <span>تعزيز</span></button><button onclick="showTab('ref',this)">👥 <span>إحالة</span></button></div>
 <script>
-const API="https://zayronbot.pythonanywhere.com";
 const JETTON_MASTER="EQAJruUqgQTd-KC3QiUAoQePVzW7KubQaXcEqlhdOb4ghwyk";
-let lang='ar', userId=null, username='', state={balance:0,pending:0,mining:0,boost:1,refs:0,refEarn:0,onchain:0,level:1}, walletAddr='';
+const LS="zyron_v41";
+let lang='ar', userId=null, username='', walletAddr='';
+let state={balance:0,pending:0,mining:false,lastTick:Date.now(),boost:1,refs:0,refEarn:0,onchain:0,level:1,tasks:{}};
 const tg=window.Telegram?.WebApp; if(tg){tg.ready(); tg.expand();}
+function save(){ localStorage.setItem(LS, JSON.stringify(state)); }
+function load(){ try{ const s=JSON.parse(localStorage.getItem(LS)||'{}'); state={...state,...s, tasks:s.tasks||{}}; }catch(e){} // استمرار التعدين حتى عند إغلاق التطبيق
+  if(state.mining){ const now=Date.now(); const elapsed=(now-(state.lastTick||now))/1000; const perSec=rewardFor(state.level)*state.boost/86400; state.pending+=Math.max(0,elapsed*perSec); state.lastTick=now; save(); } }
 function setLang(l){lang=l; document.getElementById('arBtn').classList.toggle('active',l==='ar'); document.getElementById('enBtn').classList.toggle('active',l==='en'); render();}
 function showTab(t,el){['home','withdraw','boost','ref'].forEach(x=>document.getElementById('tab-'+x).classList.add('hidden')); document.getElementById('tab-'+t).classList.remove('hidden'); document.querySelectorAll('.tabs button').forEach(b=>b.classList.remove('active')); el.classList.add('active');}
 function levelFrom(h){ if(h>=100000) return 500; if(h>=50000) return 100; if(h>=10000) return 50; if(h>=1000) return 10; if(h>=533) return 3; if(h>=116) return 2; return 1;}
 function rewardFor(l){ if(l>=500) return 500000; if(l>=100) return 100000; if(l>=50) return 30000; if(l>=10) return 6000; if(l>=3) return 854; if(l>=2) return 690; return 600;}
+function updateLevel(){ const best=Math.max(state.onchain||0, state.balance||0); state.level=levelFrom(best); }
 function render(){
+  updateLevel();
   document.getElementById('balance').textContent=Math.floor(state.balance).toLocaleString();
   document.getElementById('pendingTxt').textContent = lang==='ar' ? `المعلق: ${Math.floor(state.pending)} ZYN • المستوى: ${state.level} / 500 • تعزيز x${state.boost}` : `Pending: ${Math.floor(state.pending)} ZYN • Level: ${state.level} / 500 • Boost x${state.boost}`;
   document.getElementById('holdTxt').textContent = lang==='ar' ? `المحفوظ في المحفظة: ${Math.floor(state.onchain).toLocaleString()} ZYN` : `Holding: ${Math.floor(state.onchain).toLocaleString()} ZYN`;
@@ -30,54 +36,51 @@ function render(){
   document.getElementById('mineBtn').classList.toggle('mining', !!state.mining);
   document.getElementById('leagueLabel').textContent = state.level>=500?'👑 LEGENDARY 500': state.level>=100?'💎 DIAMOND': state.level>=50?'🥇 GOLD': state.level>=10?'🥈 SILVER':'🥉 BRONZE';
   document.getElementById('refInfo').textContent = lang==='ar' ? `إحالاتك: ${state.refs} • أرباح الإحالة: ${state.refEarn} ZYN • كل صديق: +50 ZYN + 10% من تعدينه` : `Refs: ${state.refs} • Referral earnings: ${state.refEarn} ZYN`;
-  document.getElementById('refLink').value = `https://t.me/ZyronMinerBot?start=ref_${userId||''}`;
+  document.getElementById('refLink').value = `https://t.me/ZyronMinerBot?start=${userId||''}`;
   document.getElementById('boostTxt').textContent = lang==='ar' ? `التعزيز الحالي: x${state.boost}` : `Current boost: x${state.boost}`;
+  // مهام مكتملة
+  ['ch','grp','x','inv'].forEach(k=>{ const b=document.getElementById('task-'+k); if(b && state.tasks[k]){ b.style.opacity=.5; b.textContent+=' ✅'; } });
 }
-async function api(path, body){
-  const r=await fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
-  return r.json();
+function toggleMine(){
+  const now=Date.now();
+  if(state.mining){ const elapsed=(now-state.lastTick)/1000; state.pending+=elapsed*rewardFor(state.level)*state.boost/86400; state.mining=false; }
+  else { state.mining=true; state.lastTick=now; }
+  save(); render();
 }
-async function auth(){
-  const initData = tg?.initData || '';
-  const startParam = tg?.initDataUnsafe?.start_param || new URLSearchParams(location.search).get('start') || '';
-  // In Telegram, user id from initDataUnsafe, in browser fallback to local test id
+function claim(){ if(state.pending<=0){ alert(lang==='ar'?'لا يوجد معلق للتحصيل':'Nothing to claim'); return; } state.balance+=state.pending; state.pending=0; save(); render(); alert(lang==='ar'?'تم التحصيل ✅':'Claimed ✅'); }
+function doWithdraw(){
+  const amt=parseFloat(document.getElementById('wdAmount').value||'0'); const w=document.getElementById('wdWallet').value.trim()||walletAddr;
+  if(amt<10000){ document.getElementById('wdMsg').textContent=lang==='ar'?'الحد الأدنى 10,000 ZYN':'Min 10,000 ZYN'; return; }
+  if(amt>state.balance){ document.getElementById('wdMsg').textContent=lang==='ar'?'رصيدك لا يكفي':'Not enough balance'; return; }
+  if(!w||!(w.startsWith('UQ')||w.startsWith('EQ'))){ document.getElementById('wdMsg').textContent=lang==='ar'?'أدخل محفظة صحيحة UQ... / EQ...':'Enter valid wallet'; return; }
+  state.balance-=amt; save(); render();
+  const text=`طلب سحب ZYRON: ${amt} ZYN إلى ${w} - من المستخدم ${userId||''}`;
+  document.getElementById('wdMsg').textContent=lang==='ar'?'تم خصم المبلغ، سيتم فتح البوت لإرسال الطلب ✅':'Amount deducted, opening bot to send request ✅';
+  const url='https://t.me/ZyronMinerBot?text='+encodeURIComponent('/withdraw '+amt+' '+w);
+  if(tg && tg.openTelegramLink){ tg.openTelegramLink(url); } else { window.open(url,'_blank'); }
+}
+function buyBoost(m){ const cost=m===2?1000:m===5?5000:10000; if(state.balance<cost){ alert(lang==='ar'?'رصيدك لا يكفي':'Not enough balance'); return; } state.balance-=cost; state.boost=m; save(); render(); alert(lang==='ar'?`تم تفعيل تعزيز x${m} ✅`:`Boost x${m} activated ✅`); }
+function doTask(k){ if(state.tasks[k]){ alert(lang==='ar'?'أنجزت هذه المهمة من قبل':'Already done'); return; } const reward=k==='inv'?1000:500; state.tasks[k]=1; state.balance+=reward; save(); render(); alert(lang==='ar'?`تمت +${reward} ZYN ✅`:`+${reward} ZYN ✅`); if(k==='ch') window.open('https://t.me/ZyronMinerBot','_blank'); }
+function copyRef(){ const el=document.getElementById('refLink'); el.select(); navigator.clipboard.writeText(el.value); alert(lang==='ar'?'تم النسخ ✅':'Copied ✅'); }
+async function checkOnchain(){
+  if(!walletAddr){ alert(lang==='ar'?'اربط محفظتك أولا':'Connect wallet first'); return; }
+  document.getElementById('onchainMsg').textContent=lang==='ar'?'جارٍ التحقق...':'Checking...';
+  try{
+    const r=await fetch(`https://tonapi.io/v2/accounts/${walletAddr}/jettons?currencies=USD`);
+    const j=await r.json(); let bal=0; let found=false;
+    (j.balances||[]).forEach(b=>{ const addr=b.jetton?.address||''; const sym=b.jetton?.symbol||''; if(addr===JETTON_MASTER || sym==='ZYN'){ bal=parseFloat(b.balance)/(10**9); found=true; } });
+    state.onchain=bal; updateLevel(); save(); render();
+    document.getElementById('onchainMsg').textContent = found ? (lang==='ar'?`رصيدك في المحفظة: ${bal.toLocaleString()} ZYN • المستوى ${state.level}`:`Wallet: ${bal.toLocaleString()} ZYN • Level ${state.level}`) : (lang==='ar'?'لم يتم العثور على ZYN في هذه المحفظة. تأكد أنك ربطت المحفظة الصحيحة.':'No ZYN found in this wallet.');
+  }catch(e){ document.getElementById('onchainMsg').textContent='❌ '+e.message; }
+}
+const tc = new TON_CONNECT_UI.TonConnectUI({manifestUrl:'https://zohirtime56.github.io/zayron/tonconnect-manifest.json', buttonRootId:'tonconnect'});
+tc.onStatusChange(w=>{ if(w){ walletAddr=w.account.address; render(); checkOnchain(); } });
+function init(){
   userId = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : (localStorage.getItem('zyron_test_uid') || 'test_'+Math.floor(Math.random()*1e6));
   if(!tg?.initDataUnsafe?.user?.id) localStorage.setItem('zyron_test_uid', userId);
   username = tg?.initDataUnsafe?.user?.username || '';
-  try{
-    const res = await api('/api/auth', {initData, uid:userId, username, start_param:startParam});
-    if(res.ok){ Object.assign(state, res.user); state.level = levelFrom(Math.max(state.onchain, state.balance)); }
-  }catch(e){ console.log('auth fail', e); }
-  render();
+  load(); render();
 }
-async function toggleMine(){ const act = state.mining ? 'stop':'start'; const res = await api('/api/mine',{user_id:userId, action:act}); if(res.ok){ state.mining=res.mining; state.pending=res.pending; state.balance=res.balance; state.level=res.level; } render(); }
-async function claim(){ const res = await api('/api/mine',{user_id:userId, action:'claim'}); if(res.ok){ state.balance=res.balance; state.pending=res.pending; } render(); alert(lang==='ar'?'تم التحصيل ✅':'Claimed ✅'); }
-async function doWithdraw(){
-  const amt = parseFloat(document.getElementById('wdAmount').value||'0'); const w = document.getElementById('wdWallet').value.trim() || walletAddr;
-  if(amt<10000){ document.getElementById('wdMsg').textContent = lang==='ar'?'الحد الأدنى 10,000 ZYN':'Min 10,000 ZYN'; return; }
-  if(!w || !(w.startsWith('UQ')||w.startsWith('EQ'))){ document.getElementById('wdMsg').textContent = lang==='ar'?'أدخل محفظة صحيحة UQ... / EQ...':'Enter valid wallet'; return; }
-  const res = await api('/api/withdraw',{user_id:userId, amount:amt, wallet:w});
-  if(res.ok){ state.balance=res.balance; document.getElementById('wdMsg').textContent = lang==='ar'?'تم إرسال طلب السحب، سيصلك بعد مراجعة المدير ✅':'Withdraw request sent ✅'; } else { document.getElementById('wdMsg').textContent = '❌ '+(res.error||''); }
-  render();
-}
-async function buyBoost(m){ const res = await api('/api/boost',{user_id:userId, mult:m}); if(res.ok){ state.boost=res.boost; alert(lang==='ar'?`تم تفعيل تعزيز x${m} ✅`:`Boost x${m} activated ✅`); } else alert('❌ '+(res.error||'')); render(); }
-async function doTask(k){ const res = await api('/api/task',{user_id:userId, task:k}); if(res.ok){ alert(lang==='ar'?`تمت +${res.reward} ZYN ✅`:`+${res.reward} ZYN ✅`); auth(); } else alert('❌ '+(res.error||'')); }
-function copyRef(){ navigator.clipboard.writeText(document.getElementById('refLink').value); alert(lang==='ar'?'تم النسخ ✅':'Copied ✅'); }
-async function checkOnchain(){
-  if(!walletAddr){ alert(lang==='ar'?'اربط محفظتك أولا':'Connect wallet first'); return; }
-  try{
-    const r=await fetch(`https://tonapi.io/v2/accounts/${walletAddr}/jettons?currencies=USD`);
-    const j=await r.json(); let bal=0;
-    (j.balances||[]).forEach(b=>{ if(b.jetton?.address===JETTON_MASTER) bal=parseFloat(b.balance)/(10**9); });
-    state.onchain=bal; state.level=levelFrom(bal);
-    await api('/api/update_onchain',{user_id:userId, onchain:bal, wallet:walletAddr});
-    render(); alert(lang==='ar'?`رصيدك في المحفظة: ${bal.toLocaleString()} ZYN • المستوى ${state.level}`:`Wallet: ${bal.toLocaleString()} ZYN • Level ${state.level}`);
-  }catch(e){ alert('❌ '+e); }
-}
-// TonConnect - PINNED version 2.0.6 (not @latest)
-const tc = new TON_CONNECT_UI.TonConnectUI({manifestUrl:'https://zohirtime56.github.io/zayron/tonconnect-manifest.json', buttonRootId:'tonconnect'});
-tc.onStatusChange(w=>{ if(w){ walletAddr=w.account.address; render(); } });
-auth();
-// Refresh pending every 30s
-setInterval(async()=>{ if(state.mining){ const res=await api('/api/mine',{user_id:userId, action:'claim'}); if(res.ok){ state.balance=res.balance; state.pending=res.pending; render(); } } }, 30000);
+init();
+setInterval(()=>{ if(state.mining){ const now=Date.now(); const elapsed=(now-state.lastTick)/1000; state.pending+=elapsed*rewardFor(state.level)*state.boost/86400; state.lastTick=now; save(); render(); } }, 1000);
 </script></body></html>
