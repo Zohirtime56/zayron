@@ -1,0 +1,7 @@
+token.txt
+zyron.db
+zyron.db.bak
+zyron.db-wal
+zyron.db-shm
+*.bak
+__pycache__/
