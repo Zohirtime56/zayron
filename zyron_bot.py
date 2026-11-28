@@ -1,7 +1,7 @@
 # ZYRON Miner Bot - telebot - shared DB (zyron.db) with app.py
 # Same database as the Flask app -> one balance in the bot and the app.
 # All user-facing text: Modern Standard Arabic + English only.
-import sqlite3, time, os, json, threading, telebot
+import time, os, json, threading, telebot
 from telebot.types import InlineKeyboardMarkup, InlineKeyboardButton, WebAppInfo
 
 BASE = os.path.dirname(os.path.abspath(__file__))
@@ -14,11 +14,7 @@ if not BOT_TOKEN:
         BOT_TOKEN = ""
 WEBAPP_URL = "https://zohirtime56.github.io/zayron/"
 ADMIN_ID = 7527825632
-MINE_REWARD = 100
-MINE_COOLDOWN = 6 * 3600
 REFERRAL_BONUS = 50
-MIN_WITHDRAW = 10000
-WITHDRAW_COOLDOWN = 48 * 3600
 
 if not BOT_TOKEN or ":" not in BOT_TOKEN:
     print("ERROR: token.txt missing")
@@ -27,98 +23,8 @@ if not BOT_TOKEN or ":" not in BOT_TOKEN:
 # No global parse_mode: user names with _ or special chars must never break a reply.
 bot = telebot.TeleBot(BOT_TOKEN)
 
-_db_lock = threading.Lock()
-
-def db():
-    c = sqlite3.connect(DB, timeout=15)
-    c.row_factory = sqlite3.Row
-    c.execute("PRAGMA journal_mode=WAL")
-    c.execute("PRAGMA busy_timeout=15000")
-    return c
-
-def init_db():
-    c = db(); cur = c.cursor()
-    cur.execute("""CREATE TABLE IF NOT EXISTS users (
-        user_id TEXT PRIMARY KEY, username TEXT, balance REAL DEFAULT 0,
-        pending REAL DEFAULT 0, mining INTEGER DEFAULT 0, last_tick INTEGER DEFAULT 0,
-        wallet TEXT DEFAULT '', referrals INTEGER DEFAULT 0, referred_by TEXT DEFAULT '',
-        joined_at TEXT DEFAULT '', onchain REAL DEFAULT 0, boost INTEGER DEFAULT 1,
-        tasks TEXT DEFAULT '{}', ref_earn REAL DEFAULT 0, last_bot_mine INTEGER DEFAULT 0
-    )""")
-    cur.execute("""CREATE TABLE IF NOT EXISTS withdraws (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, amount REAL, wallet TEXT,
-        status TEXT DEFAULT 'pending', created_at INTEGER, updated_at INTEGER DEFAULT 0
-    )""")
-    cols = [r[1] for r in cur.execute("PRAGMA table_info(users)").fetchall()]
-    if "last_bot_mine" not in cols:
-        cur.execute("ALTER TABLE users ADD COLUMN last_bot_mine INTEGER DEFAULT 0")
-    wcols = [r[1] for r in cur.execute("PRAGMA table_info(withdraws)").fetchall()]
-    if "updated_at" not in wcols:
-        cur.execute("ALTER TABLE withdraws ADD COLUMN updated_at INTEGER DEFAULT 0")
-        cur.execute("UPDATE withdraws SET updated_at=created_at WHERE updated_at=0")
-    c.commit(); c.close()
-
-init_db()
-
-# ---------- Level system (same table as app.py) ----------
-def level_requirement(l):
-    l = int(l)
-    if l <= 1:   return 500.0
-    if l <= 10:  return 500.0    * 10 ** ((l - 1) / 9)
-    if l <= 50:  return 5000.0   * 10 ** ((l - 10) / 40)
-    if l <= 100: return 50000.0  * 4  ** ((l - 50) / 50)
-    return 200000.0 * 25 ** ((l - 100) / 400)
-
-_REQS = [0.0] + [level_requirement(l) for l in range(1, 501)]
-
-def level_from(h):
-    h = float(h or 0)
-    if h < _REQS[1]:
-        return 1
-    lo, hi = 1, 500
-    while lo < hi:
-        mid = (lo + hi + 1) // 2
-        if _REQS[mid] <= h:
-            lo = mid
-        else:
-            hi = mid - 1
-    return lo
-
-def reward_for(l):
-    l = int(l or 0)
-    if l <= 0: return 0
-    if l >= 500: return 1000000
-    return 600 + l * l * 4
-
-def get_user(uid, username=""):
-    uid = str(uid)
-    with _db_lock:
-        c = db(); cur = c.cursor(); now = int(time.time() * 1000)
-        cur.execute("SELECT * FROM users WHERE user_id=?", (uid,))
-        r = cur.fetchone()
-        is_new = False
-        if not r:
-            is_new = True
-            cur.execute("INSERT INTO users (user_id, username, joined_at, last_tick) VALUES (?,?,?,?)",
-                        (uid, username, str(int(time.time())), now))
-            c.commit()
-            cur.execute("SELECT * FROM users WHERE user_id=?", (uid,))
-            r = cur.fetchone()
-        if r["mining"]:
-            last = r["last_tick"] or now
-            elapsed = max(0, now - last) / 1000
-            lvl = level_from(r["onchain"] or 0)
-            add = elapsed * reward_for(lvl) * (r["boost"] or 1) / 86400
-            if add > 0:
-                cur.execute("UPDATE users SET pending=pending+?, last_tick=? WHERE user_id=?",
-                            (add, now, uid))
-                c.commit()
-                cur.execute("SELECT * FROM users WHERE user_id=?", (uid,))
-                r = cur.fetchone()
-        c.close()
-        d = dict(r)
-        d["_is_new"] = is_new
-        return d
+import zyron_core as core
+from zyron_core import db, get_user, _db_lock
 
 # ---------- Safe send/edit helpers (retry so a 503 is not lost) ----------
 def safe_send(chat_id, text, kb=None, tries=3):
@@ -146,7 +52,6 @@ def safe_edit(text, chat_id, msg_id, kb=None):
 def main_keyboard():
     kb = InlineKeyboardMarkup()
     kb.add(InlineKeyboardButton("⛏️ فتح التعدين / Open Miner", web_app=WebAppInfo(url=WEBAPP_URL)))
-    kb.add(InlineKeyboardButton("⛏️ تعدين ZYN", callback_data="mine"))
     kb.add(InlineKeyboardButton("💰 الرصيد", callback_data="balance"),
            InlineKeyboardButton("👥 الإحالات", callback_data="referral"))
     kb.add(InlineKeyboardButton("👛 ربط المحفظة", callback_data="wallet_help"),
@@ -154,11 +59,12 @@ def main_keyboard():
     kb.add(InlineKeyboardButton("📋 المهام", callback_data="tasks"))
     return kb
 
-def wd_admin_text(wid, uid, username, amt, w, status_line):
+def wd_admin_text(wid, uid, username, amt, w, status_line, fee=None, net=None):
     return (f"💸 طلب سحب ZYRON #{wid}\n"
             f"معرف المستخدم: {uid}\n"
             f"اسم المستخدم: @{username or 'بدون'}\n"
-            f"المبلغ: {int(amt)} ZYN\n"
+            f"المبلغ المخصوم: {amt:,.2f} ZYN | الرسوم: {(fee or 0):,.2f}\n"
+            f"المبلغ الذي يجب إرساله: {(net if net is not None else amt):,.2f} ZYN\n"
             f"المحفظة: {w}\n"
             f"الحالة: {status_line}")
 
@@ -173,34 +79,20 @@ def start(message):
         parts = (message.text or "").split()
         if len(parts) > 1:
             try:
-                ref_id = int(parts[1].replace("ref_", ""))
-                if ref_id != uid and not me["referred_by"]:
-                    with _db_lock:
-                        c = db(); cur = c.cursor()
-                        cur.execute("SELECT user_id FROM users WHERE user_id=?", (str(ref_id),))
-                        exists = cur.fetchone() is not None
-                        if exists:
-                            cur.execute("UPDATE users SET referred_by=? WHERE user_id=?", (str(ref_id), str(uid)))
-                            cur.execute("UPDATE users SET balance=balance+?, referrals=referrals+1, ref_earn=ref_earn+? WHERE user_id=?",
-                                        (REFERRAL_BONUS, REFERRAL_BONUS, str(ref_id)))
-                            cur.execute("UPDATE users SET balance=balance+? WHERE user_id=?", (REFERRAL_BONUS, str(uid)))
-                            c.commit()
-                        c.close()
-                    if exists:
-                        safe_send(ref_id,
-                                  f"🎉 انضم مستخدم جديد عبر رابطك! ربحت +{REFERRAL_BONUS} ZYN\n"
-                                  f"A new user joined via your link! You earned +{REFERRAL_BONUS} ZYN")
+                # only record the referrer. The +50 bonus is paid by core after the new user's first real activity.
+                core.set_referrer(uid, parts[1])
             except Exception as e:
                 print("referral error:", e)
         me = get_user(uid)
         total = (me["balance"] or 0) + (me["pending"] or 0)
-        per_day = reward_for(level_from(me["onchain"] or 0)) * (me["boost"] or 1)
+        ue = core.user_economy(me)
+        per_day = ue["perDay"]
         text = ("👋 مرحباً بك في ZYRON Miner ⛏️\n"
                 "Welcome to ZYRON Miner ⛏️\n\n"
                 f"💰 رصيدك: {int(total)} ZYN\n"
-                f"⏰ سرعة التعدين: {per_day} ZYN / يوم\n"
-                f"🏆 المستوى: {level_from(me['onchain'] or 0)} / 500\n"
-                f"👥 لكل صديق تدعوه: +{REFERRAL_BONUS} ZYN لك وله\n\n"
+                f"⏰ سرعة التعدين: {per_day:,.2f} ZYN / يوم\n"
+                f"🏆 المستوى: {ue['level']} / 500\n"
+                f"👥 لكل صديق يقفل المستوى 1: +{REFERRAL_BONUS} ZYN لك وله\n\n"
                 "ابدأ التعدين الآن 👇")
         safe_send(uid, text, main_keyboard())
     except Exception as e:
@@ -225,53 +117,51 @@ def on_callback(call):
     if data.startswith("wd_accept_") or data.startswith("wd_reject_") or data.startswith("wd_done_"):
         if uid != ADMIN_ID:
             return
-        action, wid = data.split("_")[1], data.split("_")[2]
-        now = int(time.time())
-        with _db_lock:
-            c = db(); cur = c.cursor()
-            cur.execute("SELECT user_id, amount, wallet, status FROM withdraws WHERE id=?", (wid,))
-            r = cur.fetchone()
-            if not r:
-                c.close()
-                safe_edit("❌ طلب غير موجود / Request not found", chat_id, msg_id)
+        action, wid = data.split("_")[1], int(data.split("_")[2])
+        # the username shown is ALWAYS the requester's (from the DB), never the admin who pressed the button
+        if action == "reject":
+            res = core.reject_withdraw(wid, "admin_reject")
+            if not res["ok"]:
+                if res.get("error") == "not_found":
+                    safe_edit("❌ طلب غير موجود / Request not found", chat_id, msg_id)
+                else:
+                    safe_edit(wd_admin_text(wid, res["user_id"], res["username"], res["amount"], res["wallet"],
+                                            f"تمت معالجته مسبقاً ({res['status']})"), chat_id, msg_id)
                 return
-            if action == "accept" and r["status"] == "pending":
-                cur.execute("UPDATE withdraws SET status='sending', updated_at=? WHERE id=?", (now, wid))
-                new_status = "قيد الإرسال 📤"
-            elif action == "done" and r["status"] == "sending":
-                cur.execute("UPDATE withdraws SET status='done', updated_at=? WHERE id=?", (now, wid))
-                new_status = "تم السحب بنجاح ✅"
-            elif action == "reject" and r["status"] in ("pending", "sending"):
-                # refund: the amount was deducted when the request was created
-                cur.execute("UPDATE withdraws SET status='rejected', updated_at=? WHERE id=?", (now, wid))
-                cur.execute("UPDATE users SET balance=balance+? WHERE user_id=?", (r["amount"], r["user_id"]))
+            if res["refunded"] > 0:
                 new_status = "مرفوض ❌ (تم إرجاع الرصيد)"
+                user_msg = (f"❌ تم رفض طلب السحب ({int(res['amount'])} ZYN) وتم إرجاع الرصيد إليك.\n"
+                            f"Your withdrawal ({int(res['amount'])} ZYN) was rejected and the balance was refunded.")
             else:
-                c.close()
-                safe_edit(wd_admin_text(wid, r["user_id"], "", r["amount"], r["wallet"],
-                                        f"تمت معالجته مسبقاً ({r['status']})"), chat_id, msg_id)
-                return
-            c.commit(); c.close()
-        # notify the user
+                new_status = "مرفوض ❌ (لم يُخصم أي رصيد، لا إرجاع)"
+                user_msg = (f"❌ تم رفض طلب السحب ({int(res['amount'])} ZYN).\n"
+                            f"Your withdrawal ({int(res['amount'])} ZYN) was rejected.")
+            safe_send(int(res["user_id"]), user_msg)
+            safe_edit(wd_admin_text(wid, res["user_id"], res["username"], res["amount"], res["wallet"], new_status),
+                      chat_id, msg_id)
+            return
+        want = {"accept": ("sending", "pending"), "done": ("done", "sending")}[action]
+        r, ok = core.set_withdraw_status(wid, want[0], want[1])
+        if not r:
+            safe_edit("❌ طلب غير موجود / Request not found", chat_id, msg_id)
+            return
+        if not ok:
+            safe_edit(wd_admin_text(wid, r["user_id"], r["username"], r["amount"], r["wallet"],
+                                    f"تمت معالجته مسبقاً ({r['status']})"), chat_id, msg_id)
+            return
         if action == "accept":
             safe_send(int(r["user_id"]),
                       "📤 طلب السحب الخاص بك قيد الإرسال، يرجى الانتظار قليلاً.\n"
                       "Your withdrawal is being sent, please wait a moment.")
             kb = InlineKeyboardMarkup()
             kb.add(InlineKeyboardButton("✅ تم السحب", callback_data=f"wd_done_{wid}"))
-            safe_edit(wd_admin_text(wid, r["user_id"], username, r["amount"], r["wallet"], new_status),
+            safe_edit(wd_admin_text(wid, r["user_id"], r["username"], r["amount"], r["wallet"], "قيد الإرسال 📤", r.get("fee"), r.get("net")),
                       chat_id, msg_id, kb)
-        elif action == "done":
+        else:
             safe_send(int(r["user_id"]),
-                      f"✅ تم السحب بنجاح! وصل {int(r['amount'])} ZYN إلى محفظتك.\n"
-                      f"Withdrawal completed! {int(r['amount'])} ZYN has arrived in your wallet.")
-            safe_edit(wd_admin_text(wid, r["user_id"], username, r["amount"], r["wallet"], new_status),
-                      chat_id, msg_id)
-        elif action == "reject":
-            safe_send(int(r["user_id"]),
-                      f"❌ تم رفض طلب السحب ({int(r['amount'])} ZYN) وتم إرجاع الرصيد إليك.\n"
-                      f"Your withdrawal ({int(r['amount'])} ZYN) was rejected and the balance was refunded.")
-            safe_edit(wd_admin_text(wid, r["user_id"], username, r["amount"], r["wallet"], new_status),
+                      f"✅ تم السحب بنجاح! وصل {(r.get('net') if r.get('net') is not None else r['amount']):,.2f} ZYN إلى محفظتك.\n"
+                      f"Withdrawal completed! {(r.get('net') if r.get('net') is not None else r['amount']):,.2f} ZYN has arrived in your wallet.")
+            safe_edit(wd_admin_text(wid, r["user_id"], r["username"], r["amount"], r["wallet"], "تم السحب بنجاح ✅", r.get("fee"), r.get("net")),
                       chat_id, msg_id)
         return
 
@@ -279,30 +169,8 @@ def on_callback(call):
     me = get_user(uid, username)
     total = (me["balance"] or 0) + (me["pending"] or 0)
 
-    if data == "mine":
-        now = int(time.time())
-        last = me.get("last_bot_mine") or 0
-        if now - last < MINE_COOLDOWN:
-            left = MINE_COOLDOWN - (now - last)
-            h, m = left // 3600, (left % 3600) // 60
-            safe_edit(f"⏳ يمكنك التعدين في البوت بعد {h} ساعة و {m} دقيقة.\n"
-                      f"You can mine here again in {h}h {m}m.\n\n"
-                      f"💰 رصيدك: {int(total)} ZYN\n"
-                      "عدّن في التطبيق لتربح أكثر ⛏️", chat_id, msg_id)
-            return
-        with _db_lock:
-            c = db(); cur = c.cursor()
-            cur.execute("UPDATE users SET balance=balance+?, last_bot_mine=? WHERE user_id=?",
-                        (MINE_REWARD, now, str(uid)))
-            c.commit(); c.close()
-        me = get_user(uid)
-        safe_edit(f"✅ تم التعدين بنجاح!\n\n"
-                  f"💰 ربحت +{MINE_REWARD} ZYN\n"
-                  f"💳 رصيدك الكامل: {int((me['balance'] or 0) + (me['pending'] or 0))} ZYN\n\n"
-                  "⏳ المكافأة التالية بعد 6 ساعات.\n"
-                  "Next reward in 6 hours.", chat_id, msg_id)
-    elif data == "balance":
-        lvl = level_from(me["onchain"] or 0)
+    if data == "balance":
+        lvl = core.user_economy(me)["level"]
         safe_edit(f"💰 رصيدك الكامل: {int(total)} ZYN\n"
                   f"(رصيد {int(me['balance'] or 0)} + معلق {int(me['pending'] or 0)})\n"
                   f"👥 إحالاتك: {me['referrals'] or 0}\n"
@@ -315,8 +183,8 @@ def on_callback(call):
             bot_username = "ZyronMinerBot"
         link = f"https://t.me/{bot_username}?start={uid}"
         safe_edit(f"👥 رابط الإحالة الخاص بك:\n{link}\n\n"
-                  f"كل صديق ينضم عبره تربح +{REFERRAL_BONUS} ZYN ويربح هو +{REFERRAL_BONUS} ZYN.\n"
-                  f"Each friend who joins earns you +{REFERRAL_BONUS} ZYN.", chat_id, msg_id)
+                  f"كل صديق ينضم عبره ويقفل المستوى 1 تربح +{REFERRAL_BONUS} ZYN ويربح هو +{REFERRAL_BONUS} ZYN (حد أقصى {core.REFERRAL_DAILY_CAP} إحالة في اليوم).\n"
+                  f"Each friend who locks level 1 earns you +{REFERRAL_BONUS} ZYN (max {core.REFERRAL_DAILY_CAP} per day).", chat_id, msg_id)
     elif data == "wallet_help":
         safe_edit("👛 لربط محفظتك أرسل هذا الأمر:\n"
                   "/wallet UQ... عنوان محفظتك\n\n"
@@ -338,9 +206,8 @@ def on_callback(call):
         safe_edit("📋 المهام / Tasks:\n\n"
                   "أنجز المهام في التطبيق لتربح +500 لكل مهمة.\n"
                   "Complete tasks in the app to earn +500 each.\n\n"
-                  "1️⃣ الانضمام إلى مجموعة ZYRON\n"
-                  "2️⃣ متابعتنا على X / Telegram\n"
-                  "3️⃣ دعوة 5 أصدقاء", chat_id, msg_id)
+                  "1️⃣ الانضمام إلى قناة ZYRON: https://t.me/zayronb\n"
+                  "2️⃣ دعوة 5 أصدقاء (يقفلون المستوى 1)", chat_id, msg_id)
 
 # ---------- Commands ----------
 @bot.message_handler(commands=['wallet'])
@@ -354,11 +221,16 @@ def wallet_cmd(message):
     if not addr.startswith(("UQ", "EQ", "0Q")) or len(addr) < 40:
         bot.reply_to(message, "❌ عنوان غير صالح. يجب أن يبدأ بـ UQ أو EQ وأن يكون عنوان TON كاملاً.\nInvalid address.")
         return
-    with _db_lock:
-        c = db(); cur = c.cursor()
-        cur.execute("UPDATE users SET wallet=? WHERE user_id=?", (addr, str(uid)))
-        c.commit(); c.close()
-    bot.reply_to(message, f"✅ تم ربط المحفظة / Wallet linked:\n{addr}")
+    get_user(uid, message.from_user.username or "")
+    ok, res = core.link_wallet(uid, addr)
+    if not ok:
+        bot.reply_to(message, f"❌ {res}")
+        return
+    me = get_user(uid)
+    bot.reply_to(message, f"✅ تم ربط المحفظة / Wallet linked:\n{addr}\n"
+                          f"رصيد محفظتك / Wallet balance: {me['onchain']:,.2f} ZYN\n"
+                          f"المقفل / Locked: {me['locked'] or 0:,.2f} ZYN | المستوى / Level: {core.user_economy(me)['level']}\n"
+                          "المستوى يأتي من القفل فقط (Lock) في التطبيق.\nLevel comes only from locking ZYN in the app.")
 
 @bot.message_handler(commands=['balance'])
 def balance_cmd(message):
@@ -386,8 +258,10 @@ def stats_cmd(message):
     cc, ss = cur.fetchone()
     cur.execute("SELECT COUNT(*) FROM withdraws WHERE status IN ('pending','sending')")
     wp = cur.fetchone()[0]
+    cur.execute("SELECT COUNT(*) FROM withdraws WHERE status='queued'")
+    wq = cur.fetchone()[0]
     c.close()
-    bot.reply_to(message, f"👥 Users: {cc}\n💰 Total points: {int(ss or 0)}\n💸 Open withdrawals: {wp}")
+    bot.reply_to(message, f"👥 Users: {cc}\n💰 Total points: {int(ss or 0)}\n💸 Open withdrawals: {wp} | In budget queue: {wq}")
 
 @bot.message_handler(commands=['approve'])
 def approve_cmd(message):
@@ -415,71 +289,194 @@ def reject_cmd(message):
     if len(parts) < 2:
         bot.reply_to(message, "أرسل / Send: /reject رقم_الطلب")
         return
-    with _db_lock:
-        c = db(); cur = c.cursor()
-        cur.execute("SELECT user_id, amount, status FROM withdraws WHERE id=?", (parts[1],))
-        r = cur.fetchone()
-        if not r:
-            c.close(); bot.reply_to(message, "❌ لم أجد هذا الطلب"); return
-        if r["status"] not in ("pending", "sending"):
-            c.close(); bot.reply_to(message, "❌ هذا الطلب مُعالج مسبقاً"); return
-        cur.execute("UPDATE withdraws SET status='rejected', updated_at=? WHERE id=?", (int(time.time()), parts[1]))
-        cur.execute("UPDATE users SET balance=balance+? WHERE user_id=?", (r["amount"], r["user_id"]))
-        c.commit(); c.close()
-    safe_send(int(r["user_id"]),
-              f"❌ تم رفض طلب السحب ({int(r['amount'])} ZYN) وتم إرجاع الرصيد إليك.\n"
-              f"Your withdrawal ({int(r['amount'])} ZYN) was rejected and the balance was refunded.")
-    bot.reply_to(message, "✅ تم الرفض وإرجاع الرصيد")
+    try:
+        wid = int(parts[1])
+    except ValueError:
+        bot.reply_to(message, "❌ رقم غير صحيح"); return
+    res = core.reject_withdraw(wid, "admin_reject_cmd")
+    if not res["ok"]:
+        bot.reply_to(message, "❌ لم أجد هذا الطلب" if res.get("error") == "not_found" else "❌ هذا الطلب مُعالج مسبقاً")
+        return
+    if res["refunded"] > 0:
+        safe_send(int(res["user_id"]),
+                  f"❌ تم رفض طلب السحب ({int(res['amount'])} ZYN) وتم إرجاع الرصيد إليك.\n"
+                  f"Your withdrawal ({int(res['amount'])} ZYN) was rejected and the balance was refunded.")
+        bot.reply_to(message, f"✅ تم الرفض وإرجاع {int(res['refunded'])} ZYN إلى @{res['username'] or res['user_id']}")
+    else:
+        safe_send(int(res["user_id"]), f"❌ تم رفض طلب السحب ({int(res['amount'])} ZYN).")
+        bot.reply_to(message, "✅ تم الرفض. لم يكن هناك رصيد مخصوم فلم يُرجع شيء.")
+
+@bot.message_handler(commands=['unlocks'])
+def unlocks_cmd(message):
+    if message.from_user.id != ADMIN_ID:
+        return
+    rows = core.pending_unlocks()
+    if not rows:
+        bot.reply_to(message, "لا توجد طلبات فك / no pending unlocks"); return
+    txt = "طلبات فك القفل المعلقة / Pending unlocks:\n\n"
+    for r in rows:
+        txt += (f"#{r['id']} | user {r['user_id']} | قفل {r['amount']:,.2f} | ارسل 70%: {r['payout']:,.2f} | "
+                f"احرق 30%: {r['burn']:,.2f} | ممكن بعد {time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(r.get('unlock_at') or 0))}\n{r['wallet']}\n\n")
+    bot.reply_to(message, txt[:4000])
+
+@bot.message_handler(commands=['unlock_done'])
+def unlock_done_cmd(message):
+    # ADMIN ONLY. Run it AFTER you sent the 70% and burned the 30% by hand. It only updates the database.
+    if message.from_user.id != ADMIN_ID:
+        return
+    parts = (message.text or "").split()
+    try:
+        rid = int(parts[1])
+    except (IndexError, ValueError):
+        bot.reply_to(message, "أرسل / Send: /unlock_done رقم_الطلب"); return
+    res = core.complete_unlock(rid)
+    if not res["ok"]:
+        if res.get("error") == "too_early":
+            bot.reply_to(message, "⏳ مبكر: لا يمكن إنهاء الفك قبل " + time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(res.get("unlock_at") or 0)))
+        else:
+            bot.reply_to(message, f"❌ {res.get('error')} {res.get('status') or ''}")
+        return
+    bot.reply_to(message, f"✅ تم. المقفل تنقص {res['amount']:,.2f}. المتبقي {res['locked_left']:,.2f} | المستوى الجديد {res['level']}")
+    safe_send(int(res["user_id"]),
+              f"🔓 تم فك القفل. أرسلنا لك {res['payout']:,.2f} ZYN (70%) وتم حرق {res['burn']:,.2f} ZYN (30%).\n"
+              f"المقفل الآن: {res['locked_left']:,.2f} ZYN | المستوى: {res['level']}\n"
+              f"Unlock done: {res['payout']:,.2f} ZYN sent to you, {res['burn']:,.2f} ZYN burned.")
+
+@bot.message_handler(commands=['unlock_reject'])
+def unlock_reject_cmd(message):
+    if message.from_user.id != ADMIN_ID:
+        return
+    parts = (message.text or "").split()
+    try:
+        rid = int(parts[1])
+    except (IndexError, ValueError):
+        bot.reply_to(message, "أرسل / Send: /unlock_reject رقم_الطلب"); return
+    ok, r = core.reject_unlock(rid)
+    bot.reply_to(message, "✅ تم الرفض، المقفل لم يتغير" if ok else "❌ لم أجد طلبا معلقا بهذا الرقم")
+    if ok and r:
+        safe_send(int(r["user_id"]), "❌ تم رفض طلب فك القفل. المقفل لم يتغير.\nYour unlock request was rejected. Locked amount unchanged.")
+
+@bot.message_handler(commands=['check_user'])
+def check_user_cmd(message):
+    if message.from_user.id != ADMIN_ID:
+        return
+    parts = (message.text or "").split()
+    if len(parts) < 2:
+        bot.reply_to(message, "أرسل / Send: /check_user رقم_المستخدم")
+        return
+    rep = core.check_user_report(parts[1])
+    bot.reply_to(message, rep or "❌ مستخدم غير موجود / User not found")
+
+@bot.message_handler(commands=['rejections'])
+def rejections_cmd(message):
+    if message.from_user.id != ADMIN_ID:
+        return
+    c = db(); cur = c.cursor()
+    cur.execute("SELECT ts,user_id,username,amount,balance,reason FROM withdraw_rejections ORDER BY id DESC LIMIT 15")
+    rows = cur.fetchall(); c.close()
+    txt = "سجل الرفض / Rejected log:\n\n"
+    for r in rows:
+        txt += (f"{time.strftime('%m-%d %H:%M', time.gmtime(r['ts']))} | {r['user_id']} @{r['username'] or '-'} | "
+                f"{int(r['amount'] or 0)} (bal {int(r['balance'] or 0)}) | {r['reason']}\n")
+    bot.reply_to(message, txt[:4000] if rows else "لا يوجد / none")
 
 @bot.message_handler(commands=['withdraw'])
 def withdraw_cmd(message):
+    # /withdraw AMOUNT  -> paid to your LINKED wallet only (a wallet typed here is only compared with the linked one)
     parts = (message.text or "").split()
-    if len(parts) < 3:
-        bot.reply_to(message, "أرسل / Send: /withdraw المبلغ المحفظة")
+    if len(parts) < 2:
+        bot.reply_to(message, "أرسل / Send: /withdraw المبلغ")
         return
-    try:
-        amt = float(parts[1])
-    except ValueError:
-        bot.reply_to(message, "المبلغ غير صحيح / Invalid amount")
-        return
-    w = parts[2].strip()
     uid = message.from_user.id
-    me = get_user(uid)
-    if amt < MIN_WITHDRAW:
-        bot.reply_to(message, f"الحد الأدنى للسحب {MIN_WITHDRAW} ZYN")
+    get_user(uid, message.from_user.username or "")
+    ok, err, wid, _ = core.request_withdraw(uid, parts[1], parts[2].strip() if len(parts) > 2 else None)
+    if not ok:
+        bot.reply_to(message, f"❌ {err}")
         return
-    if amt > (me["balance"] or 0):
-        bot.reply_to(message, "الرصيد غير كافٍ / Not enough balance")
+    c = db(); r = c.execute("SELECT amount, wallet, fee, net, status FROM withdraws WHERE id=?", (wid,)).fetchone(); c.close()
+    if r["status"] == "queued":
+        pos = core.queue_position(wid)
+        bot.reply_to(message, f"⏳ الميزانية اليومية للسحب ممتلئة. طلبك ({r['amount']:,.2f} ZYN) دخل الطابور، موقعك {pos}. "
+                              f"ستتم معالجته بالترتيب عند توفر الميزانية وستصلك رسالة.\n"
+                              f"The daily budget is full. Your request is queued (position {pos}). It is processed in order, you will get a message.\nرقم الطلب / Request ID: {wid}")
         return
-    if not w.startswith(("UQ", "EQ")) or len(w) < 40:
-        bot.reply_to(message, "❌ عنوان المحفظة غير صالح / Invalid wallet")
-        return
-    now = int(time.time())
-    with _db_lock:
-        c = db(); cur = c.cursor()
-        cur.execute("SELECT id FROM withdraws WHERE user_id=? AND status IN ('pending','sending')", (str(uid),))
-        if cur.fetchone():
-            c.close()
-            bot.reply_to(message, "⏳ لديك طلب سحب قيد المعالجة.\nYou already have an open withdrawal request.")
-            return
-        cur.execute("SELECT MAX(updated_at) FROM withdraws WHERE user_id=? AND status IN ('done','rejected')", (str(uid),))
-        last_end = cur.fetchone()[0] or 0
-        if last_end and now - last_end < WITHDRAW_COOLDOWN:
-            c.close()
-            left = int((WITHDRAW_COOLDOWN - (now - last_end)) / 3600) + 1
-            bot.reply_to(message, f"⏳ طلب واحد كل 48 ساعة بعد انتهاء آخر طلب. المتبقي {left} ساعة.")
-            return
-        cur.execute("UPDATE users SET balance=balance-?, wallet=? WHERE user_id=?", (amt, w, str(uid)))
-        cur.execute("INSERT INTO withdraws (user_id, amount, wallet, status, created_at, updated_at) VALUES (?,?,?,'pending',?,?)",
-                    (str(uid), amt, w, now, now))
-        wid = cur.lastrowid
-        c.commit(); c.close()
-    bot.reply_to(message, f"✅ تم إرسال طلب سحب {int(amt)} ZYN\nرقم الطلب / Request ID: {wid}\nالحالة: قيد المعالجة ⏳")
+    bot.reply_to(message, f"✅ تم إرسال طلب سحب {r['amount']:,.2f} ZYN (الرسوم {r['fee']:,.2f}، ستستلم {r['net']:,.2f})\nرقم الطلب / Request ID: {wid}\nالحالة: قيد المعالجة ⏳")
     uname = message.from_user.username or ""
-    safe_send(ADMIN_ID, wd_admin_text(wid, uid, uname, amt, w, "قيد المعالجة ⏳"),
+    safe_send(ADMIN_ID, wd_admin_text(wid, uid, uname, r["amount"], r["wallet"], "قيد المعالجة ⏳", r["fee"], r["net"]),
               InlineKeyboardMarkup().add(
                   InlineKeyboardButton("✅ قبول - قيد الإرسال", callback_data=f"wd_accept_{wid}"),
                   InlineKeyboardButton("❌ رفض", callback_data=f"wd_reject_{wid}")))
+
+# ---------- Budget queue: promote what fits, tell the admin (buttons) and the user ----------
+def _announce_promotions():
+    for r in core.unnotified_promotions():
+        if not core.mark_notified(r["id"]):
+            continue
+        safe_send(ADMIN_ID, wd_admin_text(r["id"], r["user_id"], r["username"], r["amount"], r["wallet"], "خرج من الطابور، قيد المعالجة ⏳", r.get("fee"), r.get("net")),
+                  InlineKeyboardMarkup().add(
+                      InlineKeyboardButton("✅ قبول - قيد الإرسال", callback_data=f"wd_accept_{r['id']}"),
+                      InlineKeyboardButton("❌ رفض", callback_data=f"wd_reject_{r['id']}")))
+        try:
+            safe_send(int(r["user_id"]), f"✅ طلب السحب الخاص بك ({r['amount']:,.2f} ZYN) خرج من الطابور وقيد المعالجة.\n"
+                                         f"Your withdrawal left the queue and is being processed.")
+        except Exception:
+            pass
+
+def _queue_worker():
+    while True:
+        try:
+            core.promote_queue()
+            _announce_promotions()
+        except Exception as e:
+            print("queue worker error:", e, flush=True)
+        time.sleep(60)
+
+@bot.message_handler(commands=['wqueue'])
+def wqueue_cmd(message):
+    if message.from_user.id != ADMIN_ID:
+        return
+    rows = core.queued_list()
+    if not rows:
+        bot.reply_to(message, "الطابور فارغ / queue empty"); return
+    bot.reply_to(message, "طابور السحب (الأول بالأول) / withdrawal queue:\n" +
+                 "\n".join(f"{i}. #{r['id']} @{r['username'] or r['user_id']} - net {r['net']:,.2f} ZYN" for i, r in enumerate(rows, 1)) +
+                 "\n(/reject رقم_الطلب كيرجع الرصيد)")
+
+# ---------- Admin: economy settings (price and pool are typed by hand, never read from a DEX) ----------
+def _admin_set(message, key, usage):
+    if message.from_user.id != ADMIN_ID:
+        return
+    parts = (message.text or "").split()
+    if len(parts) < 2:
+        bot.reply_to(message, usage); return
+    ok, msg = core.set_setting(key, parts[1], force=(len(parts) > 2 and parts[2].lower() == "force"))
+    bot.reply_to(message, ("✅ " if ok else "❌ ") + msg)
+
+@bot.message_handler(commands=['setprice'])
+def setprice_cmd(message):
+    _admin_set(message, "price", "أرسل / Send: /setprice 0.000000088   (USD لكل 1 ZYN)")
+
+@bot.message_handler(commands=['setpool'])
+def setpool_cmd(message):
+    _admin_set(message, "pool_zyn", "أرسل / Send: /setpool 15000000   (ZYN في الـ pool)")
+
+@bot.message_handler(commands=['setminusd'])
+def setminusd_cmd(message):
+    _admin_set(message, "min_usd", "أرسل / Send: /setminusd 0.001   (أقل سحب بالدولار)")
+
+@bot.message_handler(commands=['economy'])
+def economy_cmd(message):
+    if message.from_user.id != ADMIN_ID:
+        return
+    e = core.economy_public()
+    c = db(); budget, used, left = core.withdraw_budget(c, int(time.time()), e["pool"]); c.close()
+    bot.reply_to(message, f"price: {e['price']:g} USD/ZYN\npool: {e['pool']:,.0f} ZYN\nmin withdraw: ${e['minUsd']:g}"
+                          f" ({(e['minWithdrawZyn'] or 0):,.2f} ZYN)\nL1 needs: {(core.level_requirement(1) or 0):,.2f} ZYN\n"
+                          f"daily budget: {budget:,.2f} | used 24h: {used:,.2f} | left: {left:,.2f} ZYN\n"
+                          f"queued: {len(core.queued_list())}")
+
+threading.Thread(target=_queue_worker, daemon=True).start()
+print("ZYN_JETTON_MASTER in use:", core.JETTON_MASTER, "(check it is the REAL ZYN master)", flush=True)
 
 while True:
     try:
@@ -490,3 +487,4 @@ while True:
     except Exception as e:
         print("polling error, restarting in 5s:", e, flush=True)
         time.sleep(5)
+

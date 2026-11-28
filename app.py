@@ -1,138 +1,22 @@
 # ZYRON Backend - Flask API - shared DB (zyron.db) with the bot
 # Deploy on PythonAnywhere Web: WSGI -> from app import app as application
-import sqlite3, os, time, json, threading, urllib.request
+# Needs zyron_core.py in the same folder. Env vars: TONAPI_KEY, TELEGRAM_BOT_TOKEN (or token.txt)
+import os, time, json, urllib.request
 from flask import Flask, request, jsonify
 from flask_cors import CORS
+import zyron_core as core
+from zyron_core import db, get_user, level_from, _db_lock, TASK_REWARDS
 
 BASE = os.path.dirname(os.path.abspath(__file__))
-DB = os.path.join(BASE, "zyron.db")
 TOKEN_FILE = os.path.join(BASE, "token.txt")
 ADMIN_ID = 7527825632
-
-MIN_WITHDRAW = 10000
-WITHDRAW_COOLDOWN = 48 * 3600          # one request per 48h, counted from the END of the previous request
-BOOST_COSTS = {2: 1000, 5: 5000, 10: 10000}
-TASK_REWARDS = {"ch": 500, "grp": 500, "x": 500, "inv": 1000}
-ZYN_PER_TON = 10000                    # reference price: 10,000 ZYN = 1 TON
 
 app = Flask(__name__)
 CORS(app)
 
-_db_lock = threading.Lock()
-
-def db():
-    c = sqlite3.connect(DB, timeout=15)
-    c.row_factory = sqlite3.Row
-    c.execute("PRAGMA journal_mode=WAL")
-    c.execute("PRAGMA busy_timeout=15000")
-    return c
-
-def init_db():
-    c = db(); cur = c.cursor()
-    cur.execute("""CREATE TABLE IF NOT EXISTS users (
-        user_id TEXT PRIMARY KEY, username TEXT, balance REAL DEFAULT 0,
-        pending REAL DEFAULT 0, mining INTEGER DEFAULT 0, last_tick INTEGER DEFAULT 0,
-        wallet TEXT DEFAULT '', referrals INTEGER DEFAULT 0, referred_by TEXT DEFAULT '',
-        joined_at TEXT DEFAULT '', onchain REAL DEFAULT 0, boost INTEGER DEFAULT 1,
-        tasks TEXT DEFAULT '{}', ref_earn REAL DEFAULT 0, last_bot_mine INTEGER DEFAULT 0
-    )""")
-    cur.execute("""CREATE TABLE IF NOT EXISTS withdraws (
-        id INTEGER PRIMARY KEY AUTOINCREMENT, user_id TEXT, amount REAL, wallet TEXT,
-        status TEXT DEFAULT 'pending', created_at INTEGER, updated_at INTEGER DEFAULT 0
-    )""")
-    # migrations for older databases
-    cols = [r[1] for r in cur.execute("PRAGMA table_info(users)").fetchall()]
-    if "last_bot_mine" not in cols:
-        cur.execute("ALTER TABLE users ADD COLUMN last_bot_mine INTEGER DEFAULT 0")
-    wcols = [r[1] for r in cur.execute("PRAGMA table_info(withdraws)").fetchall()]
-    if "updated_at" not in wcols:
-        cur.execute("ALTER TABLE withdraws ADD COLUMN updated_at INTEGER DEFAULT 0")
-        cur.execute("UPDATE withdraws SET updated_at=created_at WHERE updated_at=0")
-    c.commit(); c.close()
-
-init_db()
-
-# ---------- Level system (Dynamic ZYRON Vault) ----------
-# The level is computed from the LOCKED amount (onchain ZYN in the connected wallet),
-# not from the in-app balance. Anchors (at 10,000 ZYN = 1 TON):
-#   level 1   = 500 ZYN       (0.05 TON)
-#   level 10  = 5,000 ZYN     (0.5 TON)
-#   level 50  = 50,000 ZYN    (5 TON)
-#   level 100 = 200,000 ZYN   (20 TON)
-#   level 500 = 5,000,000 ZYN (500 TON)
-# Inside each segment the requirement grows geometrically (constant ratio per level),
-# so the curve is smooth and every step is reachable.
-def level_requirement(l):
-    l = int(l)
-    if l <= 1:   return 500.0
-    if l <= 10:  return 500.0    * 10 ** ((l - 1) / 9)
-    if l <= 50:  return 5000.0   * 10 ** ((l - 10) / 40)
-    if l <= 100: return 50000.0  * 4  ** ((l - 50) / 50)
-    return 200000.0 * 25 ** ((l - 100) / 400)
-
-_REQS = [0.0] + [level_requirement(l) for l in range(1, 501)]
-
-def level_from(h):
-    """Level 1..500 from the locked amount. Minimum level is always 1."""
-    h = float(h or 0)
-    if h < _REQS[1]:
-        return 1
-    lo, hi = 1, 500
-    while lo < hi:
-        mid = (lo + hi + 1) // 2
-        if _REQS[mid] <= h:
-            lo = mid
-        else:
-            hi = mid - 1
-    return lo
-
-def reward_for(l):
-    l = int(l or 0)
-    if l <= 0: return 0
-    if l >= 500: return 1000000
-    return 600 + l * l * 4
-
-def _accrue(cur, r, now=None):
-    """Accrue pending mining rewards since the last tick."""
-    now = now or int(time.time() * 1000)
-    pending = r["pending"] or 0
-    if r["mining"]:
-        last = r["last_tick"] or now
-        elapsed = max(0, (now - last)) / 1000
-        lvl = level_from(r["onchain"] or 0)
-        add = elapsed * reward_for(lvl) * (r["boost"] or 1) / 86400
-        if add > 0:
-            pending += add
-            cur.execute("UPDATE users SET pending=?, last_tick=? WHERE user_id=?",
-                        (pending, now, r["user_id"]))
-    return pending
-
-def get_user(uid, username=""):
-    uid = str(uid)
-    with _db_lock:
-        c = db(); cur = c.cursor(); now = int(time.time() * 1000)
-        cur.execute("SELECT * FROM users WHERE user_id=?", (uid,))
-        r = cur.fetchone()
-        if not r:
-            cur.execute("INSERT INTO users (user_id, username, joined_at, last_tick) VALUES (?,?,?,?)",
-                        (uid, username, str(int(time.time())), now))
-            c.commit()
-            cur.execute("SELECT * FROM users WHERE user_id=?", (uid,))
-            r = cur.fetchone()
-        elif username and r["username"] != username:
-            cur.execute("UPDATE users SET username=? WHERE user_id=?", (username, uid))
-        _accrue(cur, r, now)
-        c.commit()
-        cur.execute("SELECT * FROM users WHERE user_id=?", (uid,))
-        r = cur.fetchone()
-        c.close()
-        return dict(r)
-
 # ---------- Telegram helpers (admin notifications with buttons) ----------
 def _bot_token():
-    if os.path.exists(TOKEN_FILE):
-        return open(TOKEN_FILE).read().strip()
-    return os.environ.get("TELEGRAM_BOT_TOKEN", "").strip()
+    return core.bot_token()
 
 def tg_api(method, payload, retries=3):
     """Call the Bot API with simple retry so a transient 503 is not lost."""
@@ -152,20 +36,29 @@ def tg_api(method, payload, retries=3):
             time.sleep(2)
     return None
 
-def notify_admin_withdraw(wid, uid, username, amt, w):
+def notify_admin_withdraw(wid, uid, username, amt, w, fee=None, net=None):
     text = (f"💸 طلب سحب ZYRON جديد #{wid}\n"
             f"معرف المستخدم: {uid}\n"
             f"اسم المستخدم: @{username or 'بدون'}\n"
-            f"المبلغ: {int(amt)} ZYN\n"
-            f"المحفظة: {w}\n"
+            f"المبلغ المخصوم: {amt:,.2f} ZYN\n"
+            f"الرسوم: {(fee or 0):,.2f} ZYN\n"
+            f"المبلغ الذي يجب إرساله: {(net if net is not None else amt):,.2f} ZYN\n"
+            f"المحفظة (المربوطة): {w}\n"
             f"الحالة: قيد المعالجة ⏳")
     kb = {"inline_keyboard": [[
         {"text": "✅ قبول - قيد الإرسال", "callback_data": f"wd_accept_{wid}"},
         {"text": "❌ رفض", "callback_data": f"wd_reject_{wid}"}]]}
     tg_api("sendMessage", {"chat_id": ADMIN_ID, "text": text, "reply_markup": kb})
 
-def get_uid(d):
-    return str(d.get("user_id") or d.get("uid") or "").strip()
+def identity(d):
+    """Identity ONLY from Telegram initData (HMAC verified). user_id/uid in the request body are ignored."""
+    return core.verify_init_data((d or {}).get("init_data", ""))
+
+def deny():
+    return jsonify({"ok": False, "error": "unauthorized"}), 401
+
+def notify_referrer(ref):
+    tg_api("sendMessage", {"chat_id": ref, "text": f"🎉 صديقك قفل المستوى 1! ربحت +{core.REFERRAL_BONUS} ZYN\nYour friend locked level 1! +{core.REFERRAL_BONUS} ZYN"})
 
 @app.route("/")
 def home():
@@ -174,113 +67,99 @@ def home():
 @app.route("/api/auth", methods=["POST"])
 def auth():
     d = request.json or {}
-    uid = get_uid(d)
+    uid, uname = identity(d)
     if not uid:
-        return jsonify({"ok": False, "error": "no uid"})
-    u = get_user(uid, d.get("username", ""))
+        return deny()
+    u = get_user(uid, uname)
     sp = d.get("start_param", "") or ""
-    # referral: the bonus goes to the referrer, not the new user
+    # referral: only RECORD the referrer here. The bonus is paid later, after the new user's first real activity.
     if sp and not u["referred_by"]:
-        ref = str(sp).replace("ref_", "").replace("ref", "")
-        if ref and ref != uid:
-            with _db_lock:
-                c = db(); cur = c.cursor()
-                cur.execute("SELECT user_id FROM users WHERE user_id=?", (ref,))
-                if cur.fetchone():
-                    cur.execute("UPDATE users SET referred_by=? WHERE user_id=?", (ref, uid))
-                    cur.execute("UPDATE users SET balance=balance+50, referrals=referrals+1, ref_earn=ref_earn+50 WHERE user_id=?", (ref,))
-                    cur.execute("UPDATE users SET balance=balance+50 WHERE user_id=?", (uid,))
-                    c.commit()
-                c.close()
-            u = get_user(uid)
-    lvl = level_from(u["onchain"] or 0)
+        core.set_referrer(uid, sp)
+        u = get_user(uid)
+    # a friend who invited this user is paid after this user LOCKED level 1 (also retried here if the daily cap blocked it before)
+    ref = core.pay_referral_if_active(uid)
+    if ref:
+        notify_referrer(ref)
+        u = get_user(uid)
+    ue = core.user_economy(u)
+    lvl = ue["level"]
     c = db(); cur = c.cursor()
     cur.execute("SELECT COALESCE(SUM(amount),0) FROM withdraws WHERE user_id=? AND status IN ('pending','sending','done')", (uid,))
     total_wd = cur.fetchone()[0] or 0
-    cur.execute("SELECT amount, status, created_at FROM withdraws WHERE user_id=? AND status IN ('pending','sending') ORDER BY id DESC LIMIT 1", (uid,))
+    cur.execute("SELECT amount, status, created_at FROM withdraws WHERE user_id=? AND status IN ('pending','sending','queued') ORDER BY id DESC LIMIT 1", (uid,))
     pw = cur.fetchone()
+    cur.execute("SELECT id, amount, payout, burn, created_at, unlock_at FROM unlock_requests WHERE user_id=? AND status='pending' ORDER BY id DESC LIMIT 1", (uid,))
+    ur = cur.fetchone()
     c.close()
-    return jsonify({"ok": True, "user": {
+    li = core.lock_info(uid)
+    return jsonify({"ok": True, "economy": core.economy_public(), "user": {
         "balance": u["balance"], "pending": u["pending"], "mining": bool(u["mining"]),
-        "boost": u["boost"], "refs": u["referrals"], "refEarn": u["ref_earn"],
-        "onchain": u["onchain"], "level": lvl, "wallet": u["wallet"],
+        "boost": u["boost"], "boostLevel": ue["boostLevel"], "boostCost": ue["boostCost"], "boostBonusPerDay": ue["boostBonusPerDay"],
+        "effLocked": ue["effLocked"], "perDay": ue["perDay"], "fee": ue["fee"], "maxRequest": ue["maxRequest"],
+        "budgetLeft": ue["budgetLeft"], "tasksDone": json.loads(u["tasks"] or "{}"), "refs": u["referrals"], "refEarn": u["ref_earn"],
+        "onchain": u["onchain"], "locked": u["locked"] or 0, "level": lvl,
+        "lockWallet": li["lock_wallet"], "lockMemo": li["memo"], "lockEnabled": li["enabled"],
+        "jettonMaster": li["jetton_master"], "minLock": li["min_lock"],
+        "unlockPending": (dict(ur) if ur else None), "wallet": u["wallet"],
         "totalWd": total_wd,
         "pendingWithdraw": (pw["amount"] if pw else 0),
         "pendingWithdrawStatus": (pw["status"] if pw else ""),
+        "withdrawQueue": ue["queue"],
         "lastWithdrawAt": (pw["created_at"] if pw else 0),
     }})
 
 @app.route("/api/mine", methods=["POST"])
 def mine():
     d = request.json or {}
-    uid = get_uid(d); act = d.get("action", "")
+    uid, uname = identity(d); act = d.get("action", "")
     if not uid:
-        return jsonify({"ok": False, "error": "no uid"})
+        return deny()
     get_user(uid)  # accrues pending rewards first
-    with _db_lock:
-        c = db(); cur = c.cursor(); now = int(time.time() * 1000)
-        if act == "start":
-            cur.execute("UPDATE users SET mining=1, last_tick=? WHERE user_id=?", (now, uid))
-        elif act == "stop":
-            cur.execute("UPDATE users SET mining=0 WHERE user_id=?", (uid,))
-        elif act == "claim":
-            cur.execute("UPDATE users SET balance=balance+pending, pending=0, last_tick=? WHERE user_id=?", (now, uid))
-        c.commit(); c.close()
+    if act == "claim":
+        core.claim_mining(uid)
+    else:
+        with _db_lock:
+            c = db(); cur = c.cursor(); now = int(time.time() * 1000)
+            if act == "start":
+                cur.execute("UPDATE users SET mining=1, last_tick=? WHERE user_id=?", (now, uid))
+            elif act == "stop":
+                cur.execute("UPDATE users SET mining=0 WHERE user_id=?", (uid,))
+            c.commit(); c.close()
     u = get_user(uid)
+    ue = core.user_economy(u)
     return jsonify({"ok": True, "mining": bool(u["mining"]), "pending": u["pending"],
-                    "balance": u["balance"], "level": level_from(u["onchain"] or 0)})
+                    "balance": u["balance"], "level": ue["level"], "perDay": ue["perDay"]})
 
 @app.route("/api/withdraw", methods=["POST"])
 def withdraw():
     d = request.json or {}
-    uid = get_uid(d)
-    try:
-        amt = float(d.get("amount") or 0)
-    except (TypeError, ValueError):
-        return jsonify({"ok": False, "error": "مبلغ غير صالح"})
-    w = (d.get("wallet") or "").strip()
+    uid, uname = identity(d)
     if not uid:
-        return jsonify({"ok": False, "error": "no uid"})
+        return deny()
+    # the payout wallet is ALWAYS the linked wallet. A wallet sent by the client is only compared with it, never saved.
+    ok, err, wid, username = core.request_withdraw(uid, d.get("amount"), (d.get("wallet") or "").strip())
+    if not ok:
+        return jsonify({"ok": False, "error": err})
+    c = db(); r = c.execute("SELECT amount, wallet, fee, net, status FROM withdraws WHERE id=?", (wid,)).fetchone(); c.close()
     u = get_user(uid)
-    if amt < MIN_WITHDRAW:
-        return jsonify({"ok": False, "error": f"الحد الأدنى للسحب {MIN_WITHDRAW} ZYN"})
-    if amt > (u["balance"] or 0):
-        return jsonify({"ok": False, "error": "الرصيد غير كافٍ"})
-    if not w.startswith(("UQ", "EQ")) or len(w) < 40:
-        return jsonify({"ok": False, "error": "عنوان المحفظة غير صالح"})
-    now = int(time.time())
-    with _db_lock:
-        c = db(); cur = c.cursor()
-        # one open request maximum: block on pending AND sending
-        cur.execute("SELECT id FROM withdraws WHERE user_id=? AND status IN ('pending','sending')", (uid,))
-        if cur.fetchone():
-            c.close()
-            return jsonify({"ok": False, "error": "لديك طلب سحب قيد المعالجة"})
-        # 48h counted from the END (done / rejected) of the last request
-        cur.execute("SELECT MAX(updated_at) FROM withdraws WHERE user_id=? AND status IN ('done','rejected')", (uid,))
-        last_end = cur.fetchone()[0] or 0
-        if last_end and now - last_end < WITHDRAW_COOLDOWN:
-            c.close()
-            left = int((WITHDRAW_COOLDOWN - (now - last_end)) / 3600) + 1
-            return jsonify({"ok": False, "error": f"طلب واحد كل 48 ساعة بعد انتهاء آخر طلب. المتبقي {left} ساعة"})
-        cur.execute("UPDATE users SET balance=balance-?, wallet=? WHERE user_id=?", (amt, w, uid))
-        cur.execute("INSERT INTO withdraws (user_id, amount, wallet, status, created_at, updated_at) VALUES (?,?,?,'pending',?,?)",
-                    (uid, amt, w, now, now))
-        wid = cur.lastrowid
-        c.commit(); c.close()
-    notify_admin_withdraw(wid, uid, u["username"], amt, w)
-    u = get_user(uid)
-    return jsonify({"ok": True, "balance": u["balance"], "withdraw_id": wid})
+    if r["status"] == "queued":
+        # not rejected: waiting for the daily budget. The admin is told when it is promoted (bot), not now.
+        pos = core.queue_position(wid)
+        c = db(); left = core.withdraw_budget(c, int(time.time()), core.get_setting(c, "pool_zyn", 0.0))[2]; c.close()
+        return jsonify({"ok": True, "queued": True, "position": pos, "budgetLeft": left, "balance": u["balance"],
+                        "withdraw_id": wid, "fee": r["fee"], "net": r["net"]})
+    notify_admin_withdraw(wid, uid, username, r["amount"], r["wallet"], r["fee"], r["net"])
+    return jsonify({"ok": True, "queued": False, "balance": u["balance"], "withdraw_id": wid, "fee": r["fee"], "net": r["net"]})
 
 @app.route("/api/withdrawals", methods=["POST"])
 def withdrawals():
     """Withdrawal history: last 10 requests for the user."""
     d = request.json or {}
-    uid = get_uid(d)
+    uid, uname = identity(d)
     if not uid:
-        return jsonify({"ok": False, "error": "no uid"})
+        return deny()
     c = db(); cur = c.cursor()
-    cur.execute("""SELECT id, amount, wallet, status, created_at, updated_at
+    cur.execute("""SELECT id, amount, wallet, status, created_at, updated_at, fee, net
                    FROM withdraws WHERE user_id=? ORDER BY id DESC LIMIT 10""", (uid,))
     rows = [dict(r) for r in cur.fetchall()]
     c.close()
@@ -288,65 +167,87 @@ def withdrawals():
 
 @app.route("/api/boost", methods=["POST"])
 def boost():
+    """One boost only (x1.5 at most, cut by the 1.2%/day cap). The price is computed on the server."""
     d = request.json or {}
-    uid = get_uid(d)
-    try:
-        m = int(d.get("mult") or 1)
-    except (TypeError, ValueError):
-        m = 1
-    if m not in BOOST_COSTS:
-        return jsonify({"ok": False, "error": "Invalid boost"})
-    cost = BOOST_COSTS[m]
-    u = get_user(uid)
-    if (u["balance"] or 0) < cost:
-        return jsonify({"ok": False, "error": "الرصيد غير كافٍ"})
-    with _db_lock:
-        c = db(); cur = c.cursor()
-        cur.execute("UPDATE users SET balance=balance-?, boost=? WHERE user_id=?", (cost, m, uid))
-        c.commit(); c.close()
-    return jsonify({"ok": True, "boost": m})
+    uid, uname = identity(d)
+    if not uid:
+        return deny()
+    ok, res = core.buy_boost(uid)
+    if not ok:
+        return jsonify({"ok": False, "error": res})
+    return jsonify({"ok": True, "boost": res["boost"], "cost": res["cost"]})
 
 @app.route("/api/task", methods=["POST"])
 def task():
     d = request.json or {}
-    uid = get_uid(d); k = d.get("task") or ""
-    if k not in TASK_REWARDS:
-        return jsonify({"ok": False, "error": "Unknown task"})
+    uid, uname = identity(d)
+    if not uid:
+        return deny()
+    ok, res = core.claim_task(uid, d.get("task") or "")
+    if not ok:
+        return jsonify({"ok": False, "error": res})
+    return jsonify({"ok": True, "reward": res})
+
+def notify_admin_unlock(info, username):
+    text = (f"🔓 طلب فك القفل #{info['id']}\n"
+            f"المستخدم: {info['user_id']} @{username or 'بدون'}\n"
+            f"المبلغ المقفول المطلوب فكه: {info['amount']:,.2f} ZYN\n"
+            f"ارسل له يدويا (70%): {info['payout']:,.2f} ZYN\n"
+            f"احرق يدويا (30%): {info['burn']:,.2f} ZYN\n"
+            f"المحفظة: {info['wallet']}\n"
+            f"⏳ لا يمكن إنهاؤه قبل: {time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime(info['unlock_at']))} (7 أيام)\n\n"
+            f"بعد الإرسال والحرق اكتب: /unlock_done {info['id']}\n"
+            f"للرفض: /unlock_reject {info['id']}")
+    tg_api("sendMessage", {"chat_id": ADMIN_ID, "text": text})
+
+@app.route("/api/lock_verify", methods=["POST"])
+def lock_verify():
+    """User says 'I sent ZYN to the lock wallet'. The server reads the chain; the app sends no amount."""
+    d = request.json or {}
+    uid, uname = identity(d)
+    if not uid:
+        return deny()
+    get_user(uid, uname)
+    ok, res, lvl = core.claim_lock(uid)
+    ref = core.pay_referral_if_active(uid) if ok else None
+    if ref:
+        notify_referrer(ref)
     u = get_user(uid)
-    try:
-        tasks = json.loads(u["tasks"] or "{}")
-    except (TypeError, ValueError):
-        tasks = {}
-    if tasks.get(k):
-        return jsonify({"ok": False, "error": "Already done"})
-    reward = TASK_REWARDS[k]
-    tasks[k] = 1
-    with _db_lock:
-        c = db(); cur = c.cursor()
-        cur.execute("UPDATE users SET balance=balance+?, tasks=? WHERE user_id=?",
-                    (reward, json.dumps(tasks), uid))
-        c.commit(); c.close()
-    return jsonify({"ok": True, "reward": reward})
+    ue = core.user_economy(u)
+    out = {"ok": ok, "locked": u["locked"] or 0, "level": ue["level"], "effLocked": ue["effLocked"]}
+    if ok: out["credited"] = res
+    else: out["error"] = res
+    return jsonify(out)
+
+@app.route("/api/unlock_request", methods=["POST"])
+def unlock_request():
+    d = request.json or {}
+    uid, uname = identity(d)
+    if not uid:
+        return deny()
+    get_user(uid, uname)
+    ok, res = core.request_unlock(uid, d.get("amount"))
+    if not ok:
+        return jsonify({"ok": False, "error": res})
+    notify_admin_unlock(res, uname)
+    return jsonify({"ok": True, "request": res})
 
 @app.route("/api/update_onchain", methods=["POST"])
 def update_onchain():
-    """Update the locked (onchain) amount. Also used on wallet disconnect with onchain=0, wallet=''."""
+    """The app only tells us WHICH wallet is connected (or '' on disconnect).
+    `onchain` is just the wallet balance (display). The level comes ONLY from the locked amount."""
     d = request.json or {}
-    uid = get_uid(d)
+    uid, uname = identity(d)
     if not uid:
-        return jsonify({"ok": False, "error": "no uid"})
-    try:
-        bal = max(0.0, float(d.get("onchain") or 0))
-    except (TypeError, ValueError):
-        bal = 0.0
-    w = d.get("wallet") or ""
-    if not w:
-        bal = 0.0  # disconnect: no wallet means nothing locked
-    with _db_lock:
-        c = db(); cur = c.cursor()
-        cur.execute("UPDATE users SET onchain=?, wallet=? WHERE user_id=?", (bal, w, uid))
-        c.commit(); c.close()
-    return jsonify({"ok": True, "level": level_from(bal)})
+        return deny()
+    get_user(uid)
+    ok, res = core.link_wallet(uid, d.get("wallet") or "")
+    if not ok:
+        return jsonify({"ok": False, "error": res})
+    u = get_user(uid)
+    ue = core.user_economy(u)
+    return jsonify({"ok": True, "level": ue["level"], "onchain": u["onchain"], "locked": u["locked"] or 0, "effLocked": ue["effLocked"]})
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=False)
+
