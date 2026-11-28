@@ -146,7 +146,7 @@ radial-gradient(700px 520px at 110% 80%,rgba(255,190,40,.05) 0%,transparent 55%)
 <div id="tab-swap" class="hidden"><div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg></span><span data-i18n="swapTitle">تبادل</span></h3><div class="small" data-i18n="swapSub">بدّل ZYN إلى TON والعكس عبر STON.fi.</div><input class="inp" id="swapAmt" type="number" inputmode="decimal" data-i18n-ph="swapPh" placeholder="المبلغ ZYN - مثال: 10000"><div class="small" id="swapOut" style="margin-top:8px"></div><button class="btn" onclick="openSwap()" data-i18n="swapBtn">↗ فتح التبادل في STON.fi</button><div class="small" style="margin-top:8px" data-i18n="swapPrice">السعر المرجعي: 10,000 ZYN = 1 TON</div></div></div>
 
 <!-- MENU -->
-<div id="tab-menu" class="hidden"><div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span><span data-i18n="tasksTitle">المهام - اربح ZYN</span></h3><div class="small" data-i18n="tasksSub">أنجز المهام واحصل على المكافأة مرة واحدة.</div><div class="flex"><button class="btn ghost" onclick="doTask('ch',this)"><svg class="bic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> <span data-i18n="taskCh">القناة</span> +500</button><button class="btn ghost" onclick="doTask('grp',this)"><svg class="bic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> <span data-i18n="taskGrp">المجموعة</span> +500</button></div><div class="flex"><button class="btn ghost" onclick="doTask('x',this)">𝕏 <span data-i18n="taskX">تابعنا</span> +500</button><button class="btn ghost" onclick="doTask('inv',this)"><svg class="bic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 21a8 8 0 0 1 13.292-6"/><circle cx="10" cy="8" r="5"/><path d="M19 16v6"/><path d="M22 19h-6"/></svg> <span data-i18n="taskInv">دعوة صديق</span> +1000</button></div></div><div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></span><span data-i18n="boostTitle">تعزيز التعدين</span></h3><div class="small" id="boostTxt"></div><div class="boost-grid"><button onclick="buyBoost(2)">x2<br>1,000 ZYN</button><button onclick="buyBoost(5)">x5<br>5,000 ZYN</button><button onclick="buyBoost(10)">x10<br>10,000 ZYN</button></div></div></div>
+<div id="tab-menu" class="hidden"><div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span><span data-i18n="tasksTitle">المهام - اربح ZYN</span></h3><div class="small" data-i18n="tasksSub">أنجز المهام واحصل على المكافأة مرة واحدة.</div><div class="flex"><button class="btn ghost" onclick="doTask('ch',this)"><svg class="bic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> <span data-i18n="taskCh">القناة</span> +500</button><button class="btn ghost" onclick="doTask('grp',this)"><svg class="bic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> <span data-i18n="taskGrp">المجموعة</span> +500</button></div></div><div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></span><span data-i18n="boostTitle">تعزيز التعدين</span></h3><div class="small" id="boostTxt"></div><div class="boost-grid"><button onclick="buyBoost(2)">x2<br>1,000 ZYN</button><button onclick="buyBoost(5)">x5<br>5,000 ZYN</button><button onclick="buyBoost(10)">x10<br>10,000 ZYN</button></div></div></div>
 
 <!-- FRIENDS -->
 <div id="tab-friends" class="hidden"><div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span data-i18n="friendsTitle">الأصدقاء</span></h3><div class="small" id="refInfo"></div><input class="inp" id="refLink" readonly><button class="btn" onclick="copyRef()" data-i18n="copyBtn">📋 نسخ رابط الإحالة</button><div class="small" data-i18n="refSub">كل صديق: +50 ZYN لك وله</div></div></div>
@@ -155,6 +155,17 @@ radial-gradient(700px 520px at 110% 80%,rgba(255,190,40,.05) 0%,transparent 55%)
 <div id="tab-wallet" class="hidden">
 <div class="wallet-head"><div class="row"><div><div style="font-size:13px;opacity:.7" data-i18n="minedL">الرصيد المُعدَّن</div><div style="font-size:28px;font-weight:900;margin-top:6px"><span id="walletBalance">0</span> <span style="color:#ffd700;font-size:16px">ZYN</span></div></div><div class="badge2" data-i18n="inGameBadge">داخل التطبيق • لا يؤثر على المستوى</div></div></div>
 <div class="wallet-grid"><div class="card"><div class="small"><span data-i18n="vaultL">ضمان ZYRON Vault</span> • <span style="color:#2ee6a8" data-i18n="raisesL">يرفع المستوى</span></div><div style="font-size:18px;font-weight:800;margin-top:6px"><span id="vaultBal">0</span> ZYN</div></div><div class="card"><div class="small" data-i18n="totalWdL">إجمالي السحوبات</div><div style="font-size:18px;font-weight:800;margin-top:6px"><span id="totalWd">0</span> ZYN</div></div></div>
+<div class="card" id="lockCard"><h3 data-i18n="lockTitle">🔒 القفل والمستوى</h3>
+<div class="small"><span data-i18n="lockedNow">المقفل الآن</span>: <b id="lockedAmt">0</b> ZYN</div>
+<div class="small"><span data-i18n="walletHas">رصيدك في المحفظة</span>: <b id="walletHasAmt">0</b> ZYN</div>
+<div class="small" id="unlockPendMsg" style="color:#ffd700"></div>
+<div class="flex"><button class="btn" onclick="openLock()" data-i18n="lockBtn">🔒 Lock</button><button class="btn ghost" onclick="doUnlock()" data-i18n="unlockBtn">🔓 Unlock</button></div>
+<input class="inp" id="unlockAmt" type="number" min="0" style="margin-top:8px" data-i18n-ph="unlockAmtPh" placeholder="">
+<div id="lockBox" class="hidden" style="margin-top:10px"><div class="small" data-i18n="lockHow"></div>
+<div class="small" style="margin-top:8px" data-i18n="lockAddrL"></div><div class="inp" id="lockAddrShow" style="word-break:break-all;font-size:12px;color:#ffd700"></div>
+<div class="small" style="margin-top:8px" data-i18n="lockMemoL"></div><div class="inp" id="lockMemoShow" style="word-break:break-all;font-size:13px;color:#ffd700"></div>
+<div class="flex"><button class="btn ghost" onclick="copyTxt('lockAddrShow')" data-i18n="copyBtn">نسخ</button><a class="btn ghost" id="tkLink" target="_blank" rel="noopener" data-i18n="openTonkeeper">Tonkeeper</a></div>
+<button class="btn" onclick="verifyLock()" data-i18n="verifyBtn">✅ تحقق</button><div class="small" id="lockMsg"></div></div></div>
 <div class="card"><div class="flex" style="align-items:center"><div><span style="color:#2ee6a8">●</span> <span id="walletStatus"></span></div><div style="display:flex;gap:6px"><button class="btn ghost" style="margin:0;padding:8px" onclick="disconnectWallet()" data-i18n="disconnectBtn">فصل المحفظة</button><button class="btn ghost" style="margin:0;padding:8px" onclick="connectWallet(true)" data-i18n="changeBtn">تغيير</button></div></div><div class="inp" id="walletAddrShow" style="margin-top:10px;word-break:break-all;font-size:12px;color:#ffd700"></div></div>
 <div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></span><span data-i18n="wdTitle">سحب ZYN</span></h3><div class="small" data-i18n="wdRules"></div><div class="err hidden" id="wdPending"></div><input class="inp" id="wdAmount" type="number" inputmode="decimal" data-i18n-ph="wdAmtPh" placeholder="المبلغ - مثال: 10000"><input class="inp" id="wdWallet" data-i18n-ph="wdWalletPh" placeholder="محفظة TON - UQ... أو EQ..."><button class="btn" id="wdBtn" onclick="doWithdraw()" data-i18n="wdBtn">طلب سحب</button><div class="small" id="wdMsg" style="margin-top:8px"></div></div>
 <div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg></span><span data-i18n="wdHistoryTitle">سجل السحوبات</span></h3><div id="wdHistory"><div class="small" data-i18n="wdEmpty">لا توجد سحوبات بعد</div></div></div>
@@ -172,7 +183,7 @@ radial-gradient(700px 520px at 110% 80%,rgba(255,190,40,.05) 0%,transparent 55%)
 const API="https://zayronbot.pythonanywhere.com";
 const JETTON_MASTER="EQAJruUqgQTd-KC3QiUAoQePVzW7KubQaXcEqlhdOb4ghwyk";
 let lang=localStorage.getItem('zyron_lang')||'ar', userId=null, username='',
-    state={balance:0,pending:0,mining:0,boost:1,refs:0,refEarn:0,onchain:0,level:1,totalWd:0,pendingWithdraw:0,pendingWithdrawStatus:'',lastWithdrawAt:0},
+    state={balance:0,pending:0,mining:0,boost:1,refs:0,refEarn:0,onchain:0,locked:0,lockWallet:'',lockMemo:'',lockEnabled:false,jettonMaster:'',unlockPending:null,level:1,totalWd:0,pendingWithdraw:0,pendingWithdrawStatus:'',lastWithdrawAt:0},
     walletAddr='', levelFilter='all', levelTab='leagues', mineBusy=false, lastTickTime=Date.now(), connectTimer=null;
 const tg=window.Telegram?.WebApp; if(tg){tg.ready(); tg.expand();}
 
@@ -180,11 +191,12 @@ const T={
  ar:{
   vTag:'شبكة TON • ZYRON Miner v6',miningTitle:'التعدين النشط',paused:'متوقف مؤقتاً',miningOn:'التعدين نشط',leaguesBtn:'الدوريات ⓘ',
   startMine:'⛏️ ابدأ التعدين',stopMine:'⏸️ إيقاف التعدين',claimBtn:'💰 تحصيل',apiErr:'⚠️ الخادم غير متصل. تأكد من تشغيل PythonAnywhere Web.',
+  lockTitle:'🔒 القفل والمستوى',lockBtn:'🔒 قفل - Lock',unlockBtn:'🔓 فك القفل - Unlock',lockedNow:'المقفل الآن',walletHas:'رصيدك في المحفظة (غير مقفل، ما كيرفعش المستوى)',lockHow:'ارسل ZYN من محفظتك المربوطة إلى هذا العنوان، وضع هذا التعليق (Comment) بالضبط، ثم اضغط تحقق.',lockAddrL:'عنوان القفل',lockMemoL:'التعليق (إجباري)',copyBtn:'نسخ',verifyBtn:'✅ أرسلت، تحقق',openTonkeeper:'فتح في Tonkeeper',lockOff:'القفل غير مفعل بعد',lockOk:a=>`تم قفل ${a.toLocaleString()} ZYN ✅`,unlockAmtPh:'المبلغ المراد فكه (فارغ = الكل)',unlockConfirm:'سيرجع لك 70% فقط و30% تتحرق. الفك يدوي من الأدمن. المستوى ما كيتبدلش حتى يتم الفك. متأكد؟',unlockSent:'تم إرسال طلب الفك، الأدمن غادي يعالجو ✅',unlockPend:a=>`طلب فك قيد المعالجة: ${a.toLocaleString()} ZYN (ترجع 70%)`,needWallet:'اربط المحفظة أولا',
   perHourL:'⚡ في الساعة',perDayL:'📅 يومياً',boostL:'↗ تعزيز',boostSub:'المضاعف',levelWord:'المستوى',lockedL:'المقفل في المحفظة',
   lvlSub2:'⚡ المستوى من الكمية المقفلة، ويحدد سرعة أرباحك',rulesTitle:'قواعد مستويات التعدين',
   vaultBox:'✅ ZYRON Vault: يُحسب المستوى من الكمية المقفلة في محفظتك، وليس من رصيد التطبيق. المستوى يرتفع إذا زادت الكمية المقفلة ويهبط إذا نقصت، ولا يبقى ثابتاً.',
   priceBox:'💱 السعر المرجعي: 10,000 ZYN = 1 TON. المستوى 1 = 500 ZYN مقفلة، المستوى 10 = 5,000، المستوى 50 = 50,000، المستوى 100 = 200,000، المستوى 500 = 5,000,000.',
-  burnBox:'🛡️ الاسترداد 70/30: يمكنك فك القفل في أي وقت عبر Burn & Exit — يعود لك 70% من الكمية المقفلة، ويُحرق 30% لحماية اقتصاد الرمز.',
+  burnBox:'🛡️ الاسترداد 70/30: الفك يدوي. تطلب الفك، الأدمن يرسل لك 70% ويحرق 30%، ثم ينقص المقفل والمستوى.',
   tonCardTitle:'محفظة TON',tonCardSub:'اربط محفظتك ليرى التطبيق كميتك المقفلة من ZYN ويحدد مستواك.',
   connecting:'جاري الربط... انتظر',connectFail:'تعطل الربط، حاول مرة أخرى',retryBtn:'إعادة المحاولة',checkBtn:'🔄 تحقق من رصيد المحفظة',reconnectBtn:'🔁 ربط من جديد',
   swapTitle:'تبادل',swapSub:'بدّل ZYN إلى TON والعكس عبر STON.fi.',swapPh:'المبلغ ZYN - مثال: 10000',swapBtn:'↗ فتح التبادل في STON.fi',swapPrice:'السعر المرجعي: 10,000 ZYN = 1 TON',
@@ -209,17 +221,18 @@ const T={
   nextTxt:(need,nxt)=>`${Math.max(0,Math.floor(need)).toLocaleString()} ZYN مقفلة إلى المستوى ${nxt}`,
   levelLine:(lvl,lg,on)=>`المستوى ${lvl} • ${lg} • ${on?'التعدين نشط':'متوقف مؤقتاً'}`,
   swapOut:ton=>`ستحصل على: ${ton.toFixed(4)} TON`,
-  onchainMsg:(bal,lvl)=>`${bal.toLocaleString()} ZYN مقفلة • المستوى ${lvl}`,
-  balToast:bal=>`رصيدك المقفل في المحفظة: ${bal.toLocaleString()} ZYN`
+  onchainMsg:(bal,lvl)=>`عندك ${bal.toLocaleString()} ZYN في محفظتك • المستوى ${lvl} (المستوى من القفل فقط)`,
+  balToast:bal=>`رصيدك في المحفظة (غير مقفل): ${bal.toLocaleString()} ZYN`
  },
  en:{
   vTag:'TON network • ZYRON Miner v6',miningTitle:'Active Mining',paused:'Paused',miningOn:'Mining active',leaguesBtn:'Leagues ⓘ',
   startMine:'⛏️ Start mining',stopMine:'⏸️ Stop mining',claimBtn:'💰 Claim',apiErr:'⚠️ Server not reachable. Make sure the PythonAnywhere web app is running.',
+  lockTitle:'🔒 Lock & Level',lockBtn:'🔒 Lock',unlockBtn:'🔓 Unlock',lockedNow:'Locked now',walletHas:'In your wallet (not locked, does not raise level)',lockHow:'Send ZYN from your connected wallet to this address with exactly this comment (memo), then press Verify.',lockAddrL:'Lock address',lockMemoL:'Comment (required)',copyBtn:'Copy',verifyBtn:'✅ I sent it, verify',openTonkeeper:'Open in Tonkeeper',lockOff:'Locking is not enabled yet',lockOk:a=>`Locked ${a.toLocaleString()} ZYN ✅`,unlockAmtPh:'Amount to unlock (empty = all)',unlockConfirm:'You get back only 70%, 30% is burned. Unlock is manual by the admin. Your level does not change until it is done. Continue?',unlockSent:'Unlock request sent, the admin will process it ✅',unlockPend:a=>`Unlock pending: ${a.toLocaleString()} ZYN (70% returned)`,needWallet:'Connect your wallet first',
   perHourL:'⚡ Per hour',perDayL:'📅 Daily',boostL:'↗ Boost',boostSub:'Multiplier',levelWord:'Level',lockedL:'Locked in wallet',
   lvlSub2:'⚡ Your level comes from the locked amount and sets your earning speed',rulesTitle:'Mining level rules',
   vaultBox:'✅ ZYRON Vault: your level is computed from the locked amount in your wallet, not your in-app balance. It rises when the locked amount grows and falls when it shrinks. It never stays fixed.',
   priceBox:'💱 Reference price: 10,000 ZYN = 1 TON. Level 1 = 500 ZYN locked, level 10 = 5,000, level 50 = 50,000, level 100 = 200,000, level 500 = 5,000,000.',
-  burnBox:'🛡️ 70/30 exit: unlock anytime via Burn & Exit — 70% of the locked amount returns to you, 30% is burned to protect the token economy.',
+  burnBox:'🛡️ 70/30 exit: unlock is manual. You request it, the admin sends 70% back and burns 30%, then your locked amount and level drop.',
   tonCardTitle:'TON Wallet',tonCardSub:'Connect your wallet so the app can see your locked ZYN and set your level.',
   connecting:'Connecting... please wait',connectFail:'Connection failed, try again',retryBtn:'Retry',checkBtn:'🔄 Check wallet balance',reconnectBtn:'🔁 Reconnect',
   swapTitle:'Swap',swapSub:'Swap ZYN to TON and back via STON.fi.',swapPh:'Amount ZYN - e.g. 10000',swapBtn:'↗ Open swap on STON.fi',swapPrice:'Reference price: 10,000 ZYN = 1 TON',
@@ -244,8 +257,8 @@ const T={
   nextTxt:(need,nxt)=>`${Math.max(0,Math.floor(need)).toLocaleString()} ZYN locked to reach level ${nxt}`,
   levelLine:(lvl,lg,on)=>`Level ${lvl} • ${lg} • ${on?'Mining active':'Paused'}`,
   swapOut:ton=>`You will get: ${ton.toFixed(4)} TON`,
-  onchainMsg:(bal,lvl)=>`${bal.toLocaleString()} ZYN locked • Level ${lvl}`,
-  balToast:bal=>`Your locked wallet balance: ${bal.toLocaleString()} ZYN`
+  onchainMsg:(bal,lvl)=>`You have ${bal.toLocaleString()} ZYN in your wallet • Level ${lvl} (level comes from locking only)`,
+  balToast:bal=>`Your wallet balance (not locked): ${bal.toLocaleString()} ZYN`
  }
 };
 const t=k=>T[lang][k];
@@ -264,7 +277,7 @@ function reqFor(l){ l=Math.floor(l); if(l<=1) return 500; if(l<=10) return 500*M
 function levelFrom(h){ h=parseFloat(h||0); if(h<500) return 1; let lvl=1; for(let l=1;l<=500;l++){ if(reqFor(l)<=h) lvl=l; else break; } return lvl; }
 function rewardFor(l){ l=parseInt(l||0); if(l<=0) return 0; if(l>=500) return 1000000; return 600+l*l*4; }
 function leagueFor(l){ const n=t('leagueNames'); if(l<=0) return n[0]; if(l<=100) return n[1]; if(l<=200) return n[2]; if(l<=300) return n[3]; if(l<=400) return n[4]; return n[5]; }
-function holdBase(){ return Math.max(0, state.onchain||0); }
+function holdBase(){ return Math.max(0, state.locked||0); }  // level comes ONLY from the locked amount
 function livePending(){ if(!state.mining) return state.pending||0; const perSec=rewardFor(levelFrom(holdBase()))*(state.boost||1)/86400; return (state.pending||0)+perSec*(Date.now()-lastTickTime)/1000; }
 function nextInfo(){ const lvl=state.level; if(lvl>=500) return {next:500, req:reqFor(500), pct:100}; const nxt=lvl+1; const req=reqFor(nxt); const prev=lvl<=1?0:reqFor(lvl); const cur=holdBase(); const pct=Math.min(100,Math.max(0,(cur-prev)/Math.max(1,(req-prev))*100)); return {next:nxt, req, pct}; }
 function fmt(n){ return Math.floor(n).toLocaleString(); }
@@ -275,8 +288,8 @@ function render(){
   const perDay=rewardFor(lvl)*(state.boost||1); const perHour=perDay/24;
   document.getElementById('balance').textContent=fmt(total);
   document.getElementById('walletBalance').textContent=fmt(total);
-  document.getElementById('vaultBal').textContent=fmt(state.onchain||0);
-  document.getElementById('holdTxt').textContent=fmt(state.onchain||0);
+  document.getElementById('vaultBal').textContent=fmt(state.locked||0); renderLock();
+  document.getElementById('holdTxt').textContent=fmt(state.locked||0);
   document.getElementById('totalWd').textContent=fmt(state.totalWd||0);
   document.getElementById('levelLine').textContent=t('levelLine')(lvl,leagueFor(lvl),!!state.mining);
   document.getElementById('mineStateTxt').textContent=state.mining?t('miningOn'):t('paused');
@@ -316,11 +329,11 @@ function showApiErr(show){ document.getElementById('apiErr').classList.toggle('h
 
 async function auth(){
   const startParam = tg?.initDataUnsafe?.start_param || new URLSearchParams(location.search).get('start') || '';
-  userId = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : (localStorage.getItem('zyron_test_uid') || 'test_'+Math.floor(Math.random()*1e6));
-  if(!tg?.initDataUnsafe?.user?.id) localStorage.setItem('zyron_test_uid', userId);
-  username = tg?.initDataUnsafe?.user?.username || '';
+  userId = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : null; // display only (referral link), never sent to the server
+  // identity comes ONLY from Telegram initData, verified by the server. No test uid anymore.
+  if(!tg?.initData){ showApiErr(true); render(); return; }
   try{
-    const res = await api('/api/auth', {uid:userId, username, start_param:startParam});
+    const res = await api('/api/auth', {init_data:tg?.initData||'', start_param:startParam});
     if(res.ok){ applyUser(res.user); showApiErr(false); } else showApiErr(true);
   }catch(e){ showApiErr(true); }
   render();
@@ -330,14 +343,14 @@ async function toggleMine(){
   const btn=document.getElementById('mineBtn'); btn.disabled=true;
   const act = state.mining ? 'stop':'start';
   try{
-    const res = await api('/api/mine',{user_id:userId, action:act});
+    const res = await api('/api/mine',{init_data:tg?.initData||'', action:act});
     if(res.ok){ state.mining=res.mining; state.pending=res.pending; state.balance=res.balance; state.level=res.level; lastTickTime=Date.now(); showApiErr(false); }
   }catch(e){ showApiErr(true); }
   btn.disabled=false; mineBusy=false; render();
 }
 async function claim(){
   try{
-    const res = await api('/api/mine',{user_id:userId, action:'claim'});
+    const res = await api('/api/mine',{init_data:tg?.initData||'', action:'claim'});
     if(res.ok){ state.balance=res.balance; state.pending=res.pending; lastTickTime=Date.now(); toast(t('claimed')); }
   }catch(e){ toast(t('connErr')); }
   render();
@@ -351,7 +364,7 @@ async function doWithdraw(){
   if(!w || !(w.startsWith('UQ')||w.startsWith('EQ')) || w.length<40){ msg.textContent=t('badWallet'); return; }
   document.getElementById('wdBtn').disabled=true;
   try{
-    const res = await api('/api/withdraw',{user_id:userId, amount:amt, wallet:w});
+    const res = await api('/api/withdraw',{init_data:tg?.initData||'', amount:amt, wallet:w});
     if(res.ok){ state.balance=res.balance; state.pendingWithdraw=amt; state.pendingWithdrawStatus='pending'; msg.textContent=t('wdSent'); loadWithdrawals(); }
     else { msg.textContent='❌ '+(res.error||''); document.getElementById('wdBtn').disabled=false; }
   }catch(e){ msg.textContent=t('connErr'); document.getElementById('wdBtn').disabled=false; }
@@ -361,7 +374,7 @@ async function loadWithdrawals(){
   const box=document.getElementById('wdHistory');
   if(!userId){ return; }
   try{
-    const res = await api('/api/withdrawals',{user_id:userId});
+    const res = await api('/api/withdrawals',{init_data:tg?.initData||''});
     if(!res.ok){ return; }
     const rows=res.withdrawals||[];
     if(!rows.length){ box.innerHTML=`<div class="small">${t('wdEmpty')}</div>`; return; }
@@ -376,7 +389,7 @@ async function loadWithdrawals(){
 }
 async function buyBoost(m){
   try{
-    const res = await api('/api/boost',{user_id:userId, mult:m});
+    const res = await api('/api/boost',{init_data:tg?.initData||'', mult:m});
     if(res.ok){ state.boost=res.boost; toast(`x${m} ✅`); auth(); }
     else toast('❌ '+(res.error||''));
   }catch(e){ toast(t('connErr')); }
@@ -385,7 +398,7 @@ async function buyBoost(m){
 async function doTask(k,el){
   if(el) el.disabled=true;
   try{
-    const res = await api('/api/task',{user_id:userId, task:k});
+    const res = await api('/api/task',{init_data:tg?.initData||'', task:k});
     if(res.ok){ toast(`+${res.reward} ZYN ✅`); auth(); }
     else { toast('❌ '+(res.error||'')); if(el) el.disabled=false; }
   }catch(e){ toast(t('connErr')); if(el) el.disabled=false; }
@@ -423,7 +436,7 @@ async function resetWalletState(){
   clearTimeout(connectTimer);
   walletAddr=''; state.onchain=0; state.level=1;
   showConnecting(false); showConnectFail(false);
-  for(let i=0;i<3;i++){ try{ const r=await api('/api/update_onchain',{user_id:userId, onchain:0, wallet:''}); if(r&&r.ok) break; }catch(e){} await new Promise(r=>setTimeout(r,1000)); }
+  for(let i=0;i<3;i++){ try{ const r=await api('/api/update_onchain',{init_data:tg?.initData||'', wallet:''}); if(r&&r.ok) break; }catch(e){} await new Promise(r=>setTimeout(r,1000)); }
   render();
 }
 async function disconnectWallet(){
@@ -436,17 +449,48 @@ async function checkOnchain(){
   if(!walletAddr){ toast(t('connectFirst')); return; }
   const m=document.getElementById('onchainMsg'); m.textContent='⏳ ...';
   try{
-    const r=await fetch(`https://tonapi.io/v2/accounts/${walletAddr}/jettons?currencies=USD`);
-    const j=await r.json(); let bal=0;
-    (j.balances||[]).forEach(b=>{ if(b.jetton?.address===JETTON_MASTER || b.jetton?.symbol==='ZYN') bal=parseFloat(b.balance)/(10**(b.jetton?.decimals??9)); });
-    state.onchain=bal;
-    await api('/api/update_onchain',{user_id:userId, onchain:bal, wallet:walletAddr});
-    m.textContent=t('onchainMsg')(bal, levelFrom(bal));
+    // the server reads the balance from TonAPI (by jetton master address); the client number is never sent or trusted
+    const r=await api('/api/update_onchain',{init_data:tg?.initData||'', wallet:walletAddr});
+    if(!r.ok) throw new Error(r.error||'err');
+    const bal=r.onchain||0; state.onchain=bal; state.locked=r.locked||0; state.level=r.level||state.level;
+    m.textContent=t('onchainMsg')(bal, state.level);
     toast(t('balToast')(bal));
   }catch(e){ m.textContent=t('tonErr'); }
   render();
 }
 
+
+// ---------- Lock / Unlock (server verifies everything on-chain; the app never sends an amount for locking) ----------
+function renderLock(){
+  const e=id=>document.getElementById(id); if(!e('lockedAmt')) return;
+  e('lockedAmt').textContent=fmt(state.locked||0); e('walletHasAmt').textContent=fmt(state.onchain||0);
+  e('lockAddrShow').textContent=state.lockWallet||t('lockOff'); e('lockMemoShow').textContent=state.lockMemo||'';
+  const up=state.unlockPending; e('unlockPendMsg').textContent=up?t('unlockPend')(up.amount):'';
+  if(state.lockWallet&&state.jettonMaster) e('tkLink').href='https://app.tonkeeper.com/transfer/'+encodeURIComponent(state.lockWallet)+'?jetton='+encodeURIComponent(state.jettonMaster)+'&text='+encodeURIComponent(state.lockMemo||'');
+}
+function openLock(){ if(!walletAddr){ toast(t('needWallet')); return; } if(!state.lockEnabled){ toast(t('lockOff')); return; } document.getElementById('lockBox').classList.toggle('hidden'); renderLock(); }
+function copyTxt(id){ try{ navigator.clipboard.writeText(document.getElementById(id).textContent); toast(t('copied')); }catch(e){} }
+async function verifyLock(){
+  const m=document.getElementById('lockMsg'); m.textContent='⏳ ...';
+  try{
+    const r=await api('/api/lock_verify',{init_data:tg?.initData||''});
+    state.locked=r.locked||0; state.level=r.level||state.level;
+    m.textContent=r.ok?t('lockOk')(r.credited):(r.error||'');
+    if(r.ok) toast(t('lockOk')(r.credited));
+  }catch(e){ m.textContent=t('connErr'); }
+  render();
+}
+async function doUnlock(){
+  if(!(state.locked>0)) return;
+  if(!confirm(t('unlockConfirm'))) return;
+  const v=document.getElementById('unlockAmt').value.trim();
+  try{
+    const r=await api('/api/unlock_request',{init_data:tg?.initData||'', amount:v?parseFloat(v):null});
+    if(!r.ok){ toast(r.error||t('connErr')); return; }
+    state.unlockPending=r.request; toast(t('unlockSent'));
+  }catch(e){ toast(t('connErr')); }
+  render();
+}
 // ---------- Levels modal ----------
 function openLevels(){ document.getElementById('levelsModal').classList.remove('hidden'); renderLeagues(); renderLevels(); }
 function closeLevels(){ document.getElementById('levelsModal').classList.add('hidden'); }
@@ -496,5 +540,6 @@ if(window.TON_CONNECT_UI?.TonConnectUI){
 applyI18n();
 auth();
 setInterval(()=>{ if(state.mining) render(); }, 1000);
-setInterval(async()=>{ try{ const a=await api('/api/auth',{uid:userId, username}); if(a.ok){ if(tcReady && !walletAddr && a.user.onchain>0){ a.user.onchain=0; a.user.level=1; resetWalletState(); } applyUser(a.user); showApiErr(false); } }catch(e){ showApiErr(true); } render(); }, 30000);
+setInterval(async()=>{ try{ const a=await api('/api/auth',{init_data:tg?.initData||''}); if(a.ok){ if(tcReady && !walletAddr && a.user.onchain>0 && !(a.user.locked>0)){ a.user.onchain=0; a.user.level=1; resetWalletState(); } applyUser(a.user); showApiErr(false); } }catch(e){ showApiErr(true); } render(); }, 30000);
 </script></body></html>
+
