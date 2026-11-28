@@ -2,119 +2,140 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
 <script src="https://telegram.org/js/telegram-web-app.js"></script><script src="https://unpkg.com/@tonconnect/ui@2.0.6/dist/tonconnect-ui.min.js"></script>
 <style>
+:root{--gold:#ffd35c;--gold2:#f5b301;--ink:#f6f4ee;--mut:rgba(246,244,238,.55);--line:rgba(255,255,255,.08);--green:#2ee6a8;--blue:#4db3ff;--red:#ff6666}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-body{margin:0;font-family:'Tajawal',system-ui,sans-serif;color:#fff;padding:16px 14px 130px;
-background:radial-gradient(1200px 600px at 80% -10%,#2a2200 0%,transparent 60%),
-radial-gradient(900px 500px at -20% 30%,#141428 0%,transparent 55%),#08080d}
-.top{display:flex;justify-content:space-between;align-items:center}
-.logo{display:flex;gap:10px;align-items:center}.logo b{font-size:22px;letter-spacing:1px}
-.logo span{width:46px;height:46px;background:linear-gradient(135deg,#ffd700,#ff9d00);border-radius:15px;display:grid;place-items:center;font-size:23px;color:#000;font-weight:900;box-shadow:0 0 24px #ffd70055,0 4px 12px #00000066}
-.lang button{background:#15151f;color:#fff;border:1px solid #2a2a38;padding:7px 12px;border-radius:999px;font-size:12px;font-family:inherit;cursor:pointer}
-.lang button.active{background:#ffd700;color:#000;font-weight:800}
-.mining-card{background:linear-gradient(160deg,#1f1a05,#12121c 55%,#0a0a10);border:1px solid #ffd70066;border-radius:24px;padding:20px 18px;margin-top:16px;box-shadow:0 10px 40px #00000055}
+body{margin:0;font-family:'Tajawal',system-ui,sans-serif;color:var(--ink);padding:18px 14px 134px;
+background:radial-gradient(900px 480px at 85% -8%,rgba(255,190,40,.13) 0%,transparent 60%),
+radial-gradient(800px 460px at -25% 22%,rgba(64,64,170,.15) 0%,transparent 55%),
+radial-gradient(700px 520px at 110% 80%,rgba(255,190,40,.05) 0%,transparent 55%),#07070c}
+.top{display:flex;justify-content:space-between;align-items:center;padding:2px 2px 0}
+.logo{display:flex;gap:11px;align-items:center}
+.logo b{font-size:23px;letter-spacing:2px;font-weight:900;background:linear-gradient(180deg,#fff3c4 10%,#f5b301 90%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo img{width:46px;height:46px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2px rgba(255,211,92,.45),0 0 26px rgba(255,211,92,.35),0 6px 14px rgba(0,0,0,.5)}
+.lang{display:flex;gap:3px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:999px;padding:3px}
+.lang button{background:transparent;color:var(--mut);border:0;padding:6px 13px;border-radius:999px;font-size:12px;font-weight:700;font-family:inherit;cursor:pointer;transition:.2s}
+.lang button.active{background:linear-gradient(180deg,#ffe27a,#f5b301);color:#241a00;font-weight:800;box-shadow:0 3px 10px rgba(245,179,1,.3)}
+.h-title,.card h3,.rules h3,.modal-head h2{display:flex;align-items:center;gap:10px}
+.h-ic{width:30px;height:30px;flex:none;border-radius:9px;display:grid;place-items:center;color:var(--gold);background:linear-gradient(160deg,rgba(255,211,92,.20),rgba(255,211,92,.05));border:1px solid rgba(255,211,92,.38);box-shadow:0 0 14px rgba(255,211,92,.12)}
+.h-ic svg{width:16px;height:16px}
+.modal-head h2 .h-ic{width:34px;height:34px;border-radius:10px}
+.modal-head h2 .h-ic svg{width:18px;height:18px}
+.mining-card{position:relative;overflow:hidden;background:linear-gradient(168deg,#1c1504 0%,#101018 55%,#0a0a10 100%);border:1px solid rgba(255,211,92,.30);border-radius:26px;padding:22px 18px;margin-top:16px;box-shadow:0 14px 44px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.06)}
+.mining-card::before{content:'';position:absolute;top:0;left:10%;right:10%;height:1px;background:linear-gradient(90deg,transparent,rgba(255,211,92,.6),transparent);pointer-events:none}
+.mining-card::after{content:'';position:absolute;top:-70px;inset-inline-end:-70px;width:190px;height:190px;border-radius:50%;background:radial-gradient(circle,rgba(255,211,92,.15),transparent 70%);pointer-events:none}
 .mining-top{display:flex;justify-content:space-between;align-items:flex-start}
-.mining-top small{font-size:13px;font-weight:700}
-.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#888;margin-inline-end:5px;vertical-align:middle}
-.dot.on{background:#2ee6a8;box-shadow:0 0 10px #2ee6a8;animation:pulse 1.6s infinite}
+.mining-top small{font-size:13px;font-weight:700;color:var(--mut)}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#666;margin-inline-end:5px;vertical-align:middle}
+.dot.on{background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 1.6s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
-.badge{font-size:12px;background:#ffd70022;border:1px solid #ffd70055;color:#ffd700;padding:6px 11px;border-radius:999px;cursor:pointer;font-family:inherit}
-.big{font-size:46px;font-weight:900;margin:14px 0 4px;line-height:1;background:linear-gradient(90deg,#fff,#ffe98a);-webkit-background-clip:text;background-clip:text;color:transparent}
-.big small{font-size:16px;color:#ffd700;-webkit-text-fill-color:#ffd700}
-.level-line{color:#ffd700;font-size:13px;font-weight:700}
-.progress{height:12px;background:#0a0a10;border-radius:999px;overflow:hidden;margin:14px 0 6px;border:1px solid #2a2a38}
-.bar{height:100%;background:linear-gradient(90deg,#ffd700,#ff9d00);width:0%;transition:width .6s;box-shadow:0 0 14px #ffd700aa;border-radius:999px}
-.prog-info{display:flex;justify-content:space-between;font-size:12px;opacity:.85}.prog-info b{color:#ffd700}
+.badge{font-size:12px;background:rgba(255,211,92,.10);border:1px solid rgba(255,211,92,.4);color:var(--gold);padding:6px 12px;border-radius:999px;cursor:pointer;font-family:inherit;font-weight:700;transition:.2s}
+.big{font-size:52px;font-weight:900;margin:16px 0 4px;line-height:1;background:linear-gradient(180deg,#ffffff 15%,#ffe27a 90%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 14px rgba(255,211,92,.18))}
+.big small{font-size:17px;color:var(--gold);-webkit-text-fill-color:var(--gold);font-weight:800;letter-spacing:1px}
+.level-line{color:var(--gold);font-size:13px;font-weight:700}
+.progress{height:13px;background:rgba(0,0,0,.45);border-radius:999px;overflow:hidden;margin:14px 0 6px;border:1px solid var(--line);box-shadow:inset 0 2px 4px rgba(0,0,0,.5)}
+.bar{position:relative;height:100%;background:linear-gradient(90deg,#f5b301,#ffd35c 60%,#ffe98a);width:0%;transition:width .6s;box-shadow:0 0 16px rgba(255,211,92,.45);border-radius:999px;overflow:hidden}
+.bar::after{content:'';position:absolute;inset:0;background:linear-gradient(115deg,transparent 30%,rgba(255,255,255,.5) 50%,transparent 70%);background-size:200% 100%;animation:sheen 2.4s linear infinite}
+@keyframes sheen{0%{background-position:180% 0}100%{background-position:-80% 0}}
+.prog-info{display:flex;justify-content:space-between;font-size:12px;color:var(--mut)}.prog-info b{color:var(--gold)}
 .mine-actions{display:flex;gap:8px;margin-top:16px}
 .mine-actions button{flex:1;padding:14px;border-radius:15px;border:0;font-weight:900;font-size:15px;cursor:pointer;font-family:inherit;transition:transform .12s}
 .mine-actions button:active{transform:scale(.96)}
 .mine-actions button:disabled{opacity:.55;cursor:default}
-.btn-gold{background:linear-gradient(135deg,#ffd700,#ffb700);color:#000;box-shadow:0 6px 18px #ffd70033}
-.btn-ghost{background:#181822;color:#fff;border:1px solid #2a2a38!important}
+.btn-gold{background:linear-gradient(180deg,#ffe27a,#f5b301);color:#241a00;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 8px 22px rgba(245,179,1,.28)}
+.btn-ghost{background:rgba(255,255,255,.05);color:var(--ink);border:1px solid var(--line)!important}
 .stats-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:12px}
-.stat{background:#13131d;border:1px solid #26262f;border-radius:18px;padding:14px 8px;text-align:center;cursor:pointer;transition:transform .12s}
-.stat:active{transform:scale(.97)}.stat div{font-size:12px;opacity:.7}
-.stat b{font-size:20px;display:block;margin:6px 0 2px}.stat span{font-size:11px;opacity:.6}
-.stat .gold{color:#ffd700}.stat .green{color:#2ee6a8}
-.lvl-card{background:#13131d;border:1px solid #ffd70044;border-radius:18px;padding:14px;margin-top:12px;display:flex;gap:12px;align-items:center;cursor:pointer}
-.lvl-badge{width:62px;height:62px;background:#ffd70022;border:1px solid #ffd70088;border-radius:14px;display:grid;place-items:center;text-align:center;font-weight:900;font-size:11px;flex-shrink:0;color:#ffd700}
-.lvl-badge span{font-size:22px;color:#fff}
-.lvl-card .t{font-weight:800}.lvl-card .sub{font-size:12px;opacity:.7;margin-top:4px}.lvl-card .green{color:#2ee6a8;font-size:12px;margin-top:4px}
-.rules{background:#13131d;border:1px solid #26262f;border-radius:18px;padding:14px;margin-top:12px}
+.stat{background:linear-gradient(165deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border:1px solid var(--line);border-radius:18px;padding:14px 8px;text-align:center;cursor:pointer;transition:transform .12s,border-color .2s;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.stat:hover{border-color:rgba(255,211,92,.3)}
+.stat:active{transform:scale(.97)}.stat div{font-size:12px;color:var(--mut)}
+.stat b{font-size:21px;display:block;margin:6px 0 2px;font-weight:900}.stat span{font-size:11px;opacity:.55}
+.stat .gold{color:var(--gold)}.stat .green{color:var(--green)}
+.lvl-card{background:linear-gradient(165deg,rgba(255,211,92,.09),rgba(255,255,255,.02) 55%);border:1px solid rgba(255,211,92,.35);border-radius:20px;padding:14px;margin-top:12px;display:flex;gap:12px;align-items:center;cursor:pointer;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+.lvl-badge{width:62px;height:62px;background:radial-gradient(circle at 30% 25%,rgba(255,211,92,.28),rgba(255,211,92,.06));border:1px solid rgba(255,211,92,.6);border-radius:16px;display:grid;place-items:center;text-align:center;font-weight:900;font-size:11px;flex-shrink:0;color:var(--gold);letter-spacing:1px;box-shadow:0 0 18px rgba(255,211,92,.14)}
+.lvl-badge span{font-size:23px;color:#fff}
+.lvl-card .t{font-weight:800}.lvl-card .sub{font-size:12px;color:var(--mut);margin-top:4px}.lvl-card .green{color:var(--green);font-size:12px;margin-top:4px}
+.rules{background:linear-gradient(165deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border:1px solid var(--line);border-radius:20px;padding:16px 14px;margin-top:12px}
 .rules h3{margin:0 0 10px;font-size:15px}
-.rules .box{background:#0c0c14;border:1px solid #26262f;border-radius:14px;padding:12px;font-size:12px;line-height:1.8;margin-top:10px}
+.rules .box{background:rgba(0,0,0,.35);border:1px solid var(--line);border-inline-start:2px solid rgba(255,211,92,.4);border-radius:14px;padding:12px;font-size:12px;line-height:1.8;margin-top:10px;color:rgba(246,244,238,.85)}
 .rules .box b{color:#fff}
-.card{background:#13131d;border:1px solid #26262f;border-radius:18px;padding:16px 14px;margin-top:12px}
+.card{background:linear-gradient(165deg,rgba(255,255,255,.05),rgba(255,255,255,.015));border:1px solid var(--line);border-radius:20px;padding:16px 14px;margin-top:12px;box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
 .card h3{margin:0 0 8px;font-size:15px}
-.btn{width:100%;background:linear-gradient(135deg,#ffd700,#ffb700);color:#000;border:0;padding:13px;border-radius:13px;font-weight:900;font-size:15px;cursor:pointer;margin-top:10px;font-family:inherit;transition:transform .12s}
+.btn{width:100%;background:linear-gradient(180deg,#ffe27a,#f5b301);color:#241a00;border:0;padding:13px;border-radius:14px;font-weight:900;font-size:15px;cursor:pointer;margin-top:10px;font-family:inherit;transition:transform .12s;box-shadow:inset 0 1px 0 rgba(255,255,255,.55),0 8px 22px rgba(245,179,1,.22)}
 .btn:active{transform:scale(.98)}
 .btn:disabled{opacity:.55;cursor:default}
-.btn.ghost{background:#181822;color:#fff;border:1px solid #2a2a38}
-.inp{width:100%;background:#0a0a10;color:#fff;border:1px solid #2a2a38;padding:12px;border-radius:13px;margin-top:8px;font-family:inherit;font-size:14px}
-.inp:focus{outline:none;border-color:#ffd70088}
-.small{font-size:12px;opacity:.7;line-height:1.7}
+.btn.ghost{background:rgba(255,255,255,.05);color:var(--ink);border:1px solid var(--line);box-shadow:none}
+.inp{width:100%;background:rgba(0,0,0,.4);color:var(--ink);border:1px solid var(--line);padding:12px 13px;border-radius:13px;margin-top:8px;font-family:inherit;font-size:14px;transition:border-color .2s,box-shadow .2s}
+.inp:focus{outline:none;border-color:rgba(255,211,92,.55);box-shadow:0 0 0 3px rgba(255,211,92,.12)}
+.small{font-size:12px;color:var(--mut);line-height:1.7}
 .flex{display:flex;gap:8px}.flex>*{flex:1}
 .boost-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
-.boost-grid button{background:#181822;color:#fff;border:1px solid #2a2a38;border-radius:13px;padding:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:transform .12s}
+.boost-grid button{background:rgba(255,255,255,.05);color:var(--ink);border:1px solid var(--line);border-radius:13px;padding:12px;font-weight:800;cursor:pointer;font-family:inherit;transition:transform .12s,border-color .2s}
+.boost-grid button:hover{border-color:rgba(255,211,92,.35)}
 .boost-grid button:active{transform:scale(.96)}
-.bottom{position:fixed;bottom:0;left:0;right:0;background:#0c0c14f2;backdrop-filter:blur(12px);border-top:1px solid #26262f;display:flex;padding:10px 8px calc(14px + env(safe-area-inset-bottom));z-index:10}
-.bottom button{flex:1;background:transparent;color:#777;border:0;padding:8px;border-radius:12px;font-size:11px;cursor:pointer;font-family:inherit}
-.bottom button.active{color:#ffd700}
-.bottom button .ic{font-size:22px;display:block}
-.bottom .center{width:58px;height:58px;background:#181822;border:1px solid #ffd70066;border-radius:50%;display:grid;place-items:center;font-size:24px;margin-top:-28px;flex:none;box-shadow:0 0 20px #ffd70033}
+.bottom{position:fixed;bottom:0;left:0;right:0;background:rgba(9,9,15,.85);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-top:1px solid rgba(255,255,255,.07);display:flex;align-items:flex-end;padding:8px 6px calc(10px + env(safe-area-inset-bottom));z-index:10}
+.bottom button{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;background:transparent;color:#8f8f9c;border:0;padding:7px 2px 5px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;transition:color .2s}
+.bottom button.active{color:var(--gold)}
+.bottom button .ic{display:grid;place-items:center;height:26px}
+.bottom button .ic svg{width:23px;height:23px}
+.bottom button::after{content:'';width:4px;height:4px;border-radius:50%;background:var(--gold);box-shadow:0 0 8px var(--gold);opacity:0;transform:scale(.3);transition:.25s}
+.bottom button.active::after{opacity:1;transform:scale(1)}
+.bottom .center{width:56px;height:56px;background:linear-gradient(180deg,#ffe27a,#f0a500);border:0;border-radius:19px;display:grid;place-items:center;margin-top:-30px;flex:none;color:#241a00;box-shadow:0 12px 28px rgba(245,179,1,.4),inset 0 1px 0 rgba(255,255,255,.6),0 0 0 5px rgba(9,9,15,.9)}
+.bottom .center svg{width:25px;height:25px}
 .hidden{display:none}
-.wallet-head{background:linear-gradient(150deg,#1f1a05,#13131d 70%);border:1px solid #ffd70044;border-radius:18px;padding:16px;margin-top:14px}
+.wallet-head{background:linear-gradient(150deg,#1c1504,#101018 70%);border:1px solid rgba(255,211,92,.30);border-radius:20px;padding:16px;margin-top:14px;box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
 .wallet-head .row{display:flex;justify-content:space-between;align-items:center}
-.wallet-head .badge2{font-size:11px;background:#181822;border:1px solid #2a2a38;padding:6px 10px;border-radius:999px}
+.wallet-head .badge2{font-size:11px;background:rgba(255,255,255,.05);border:1px solid var(--line);padding:6px 10px;border-radius:999px;color:var(--mut)}
 .wallet-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.wallet-grid .card{margin-top:0}
-.modal{position:fixed;inset:0;background:#08080d;z-index:50;overflow-y:auto;padding:14px;padding-bottom:120px}
+.modal{position:fixed;inset:0;background:radial-gradient(900px 480px at 85% -8%,rgba(255,190,40,.10) 0%,transparent 60%),#07070c;z-index:50;overflow-y:auto;padding:16px 14px 120px}
 .modal-head{display:flex;justify-content:space-between;align-items:center}
 .modal-head h2{font-size:18px;margin:0}
-.modal-head button{background:#181822;color:#fff;border:1px solid #2a2a38;border-radius:10px;padding:8px 12px;cursor:pointer;font-family:inherit}
-.tabs2{display:flex;background:#13131d;border-radius:999px;padding:4px;margin-top:14px}
-.tabs2 button{flex:1;background:transparent;color:#888;border:0;padding:10px;border-radius:999px;font-weight:800;cursor:pointer;font-family:inherit}
-.tabs2 button.active{background:#ffd700;color:#000}
-.filters{display:flex;gap:8px;overflow-x:auto;margin-top:12px;padding-bottom:4px}
-.filters button{background:#13131d;color:#fff;border:1px solid #2a2a38;padding:8px 14px;border-radius:999px;white-space:nowrap;cursor:pointer;font-family:inherit}
-.filters button.active{background:#ffd700;color:#000;font-weight:800}
-.lvl-row{background:#13131d;border:1px solid #26262f;border-radius:16px;padding:12px;margin-top:8px;display:flex;justify-content:space-between;align-items:center}
-.lvl-row.current{border-color:#ffd700;background:#1f1a05}
-.lvl-row .l{font-weight:800}.lvl-row .s{font-size:12px;opacity:.7}
-.lvl-row .r{text-align:left}.lvl-row .r b{color:#ffd700}.lvl-row .r span{color:#2ee6a8;font-size:12px}
-.league-row{background:#13131d;border:1px solid #26262f;border-radius:16px;padding:14px;margin-top:10px;display:flex;justify-content:space-between;align-items:center}
-.league-row.current{border-color:#ffd700}
-.league-row .t{font-weight:800}.league-row .s{font-size:12px;opacity:.7}
-.league-row .r{text-align:left;font-size:13px}.league-row .r b{color:#ffd700}
-.status-box{background:#1f1a05;border:1px solid #ffd70055;border-radius:16px;padding:14px;margin-top:14px}
+.modal-head>button{background:rgba(255,255,255,.05);color:var(--ink);border:1px solid var(--line);border-radius:11px;padding:8px 12px;cursor:pointer;font-family:inherit}
+.tabs2{display:flex;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:999px;padding:4px;margin-top:14px}
+.tabs2 button{flex:1;background:transparent;color:#8f8f9c;border:0;padding:10px;border-radius:999px;font-weight:800;cursor:pointer;font-family:inherit;transition:.2s}
+.tabs2 button.active{background:linear-gradient(180deg,#ffe27a,#f5b301);color:#241a00;box-shadow:0 4px 12px rgba(245,179,1,.25)}
+.filters{display:flex;gap:8px;overflow-x:auto;margin-top:12px;padding-bottom:4px;scrollbar-width:none}
+.filters::-webkit-scrollbar{display:none}
+.filters button{background:rgba(255,255,255,.05);color:var(--ink);border:1px solid var(--line);padding:8px 14px;border-radius:999px;white-space:nowrap;cursor:pointer;font-family:inherit;transition:.2s}
+.filters button.active{background:linear-gradient(180deg,#ffe27a,#f5b301);color:#241a00;font-weight:800;border-color:transparent}
+.lvl-row{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:16px;padding:12px 14px;margin-top:8px;display:flex;justify-content:space-between;align-items:center}
+.lvl-row.current{border-color:rgba(255,211,92,.6);background:linear-gradient(165deg,rgba(255,211,92,.12),rgba(255,211,92,.03));box-shadow:0 0 20px rgba(255,211,92,.08)}
+.lvl-row .l{font-weight:800}.lvl-row .s{font-size:12px;color:var(--mut)}
+.lvl-row .r{text-align:left}.lvl-row .r b{color:var(--gold)}.lvl-row .r span{color:var(--green);font-size:12px}
+.league-row{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:10px;display:flex;justify-content:space-between;align-items:center}
+.league-row.current{border-color:rgba(255,211,92,.6);background:linear-gradient(165deg,rgba(255,211,92,.12),rgba(255,211,92,.03))}
+.league-row .t{font-weight:800}.league-row .s{font-size:12px;color:var(--mut)}
+.league-row .r{text-align:left;font-size:13px}.league-row .r b{color:var(--gold)}
+.status-box{background:linear-gradient(165deg,rgba(255,211,92,.10),rgba(255,211,92,.03));border:1px solid rgba(255,211,92,.35);border-radius:18px;padding:14px;margin-top:14px}
 .status-box .grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:10px;text-align:center}
-.status-box .grid div{font-size:12px;opacity:.8}.status-box .grid b{font-size:16px;display:block;color:#fff}
-.err{background:#2a0505;border:1px solid #ff4444;border-radius:12px;padding:10px;font-size:12px;margin-top:10px}
-.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:#181822;border:1px solid #ffd70066;color:#fff;padding:11px 18px;border-radius:999px;font-size:13px;font-weight:700;z-index:99;box-shadow:0 8px 30px #000a;transition:opacity .3s}
-.wd-row{background:#0c0c14;border:1px solid #26262f;border-radius:14px;padding:10px 12px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;font-size:12px}
+.status-box .grid div{font-size:12px;color:var(--mut)}.status-box .grid b{font-size:16px;display:block;color:#fff;margin-top:2px}
+.err{background:rgba(255,70,70,.10);border:1px solid rgba(255,102,102,.45);color:#ffb3b3;border-radius:13px;padding:11px;font-size:12px;margin-top:10px;line-height:1.7}
+.toast{position:fixed;top:14px;left:50%;transform:translateX(-50%);background:rgba(14,14,22,.92);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,211,92,.4);color:var(--ink);padding:11px 18px;border-radius:999px;font-size:13px;font-weight:700;z-index:99;box-shadow:0 10px 34px rgba(0,0,0,.6);transition:opacity .3s;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+.wd-row{background:rgba(0,0,0,.35);border:1px solid var(--line);border-radius:14px;padding:11px 12px;margin-top:8px;display:flex;justify-content:space-between;align-items:center;font-size:12px}
 .wd-row .a{font-weight:800;font-size:14px}
 .wd-st{padding:4px 10px;border-radius:999px;font-weight:800;font-size:11px;white-space:nowrap}
-.wd-st.pending{background:#3a2a05;color:#ffb700;border:1px solid #ffb70066}
-.wd-st.sending{background:#05203a;color:#4db3ff;border:1px solid #4db3ff66}
-.wd-st.done{background:#053a20;color:#2ee6a8;border:1px solid #2ee6a866}
-.wd-st.rejected{background:#3a0505;color:#ff6666;border:1px solid #ff666666}
-.connecting{margin-top:10px;background:#0c0c14;border:1px solid #ffd70055;border-radius:12px;padding:12px;font-size:13px;text-align:center}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid #ffd70044;border-top-color:#ffd700;border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:middle;margin-inline-end:6px}
+.wd-st.pending{background:rgba(255,183,0,.14);color:#ffb700;border:1px solid rgba(255,183,0,.4)}
+.wd-st.sending{background:rgba(77,179,255,.14);color:var(--blue);border:1px solid rgba(77,179,255,.4)}
+.wd-st.done{background:rgba(46,230,168,.13);color:var(--green);border:1px solid rgba(46,230,168,.4)}
+.wd-st.rejected{background:rgba(255,102,102,.13);color:var(--red);border:1px solid rgba(255,102,102,.4)}
+.connecting{margin-top:10px;background:rgba(0,0,0,.35);border:1px solid rgba(255,211,92,.35);border-radius:13px;padding:12px;font-size:13px;text-align:center}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,211,92,.25);border-top-color:var(--gold);border-radius:50%;animation:sp 0.8s linear infinite;vertical-align:middle;margin-inline-end:6px}
 @keyframes sp{to{transform:rotate(360deg)}}
+.bic{width:15px;height:15px;vertical-align:-2.5px;margin-inline-end:5px;color:var(--gold)}
 </style></head><body>
-<div class="top"><div class="logo"><span>Z</span><div><b>ZYRON</b><div style="font-size:11px;opacity:.7" data-i18n="vTag">شبكة TON • ZYRON Miner v6</div></div></div><div class="lang"><button id="arBtn" class="active" onclick="setLang('ar')">العربية</button><button id="enBtn" onclick="setLang('en')">EN</button></div></div>
+<div class="top"><div class="logo"><img alt="ZYN" src="data:image/jpeg;base64,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"><div><b>ZYRON</b><div style="font-size:11px;opacity:.7" data-i18n="vTag">شبكة TON • ZYRON Miner v6</div></div></div><div class="lang"><button id="arBtn" class="active" onclick="setLang('ar')">العربية</button><button id="enBtn" onclick="setLang('en')">EN</button></div></div>
 
 <!-- MINING -->
 <div id="tab-mining">
-<div class="mining-card"><div class="mining-top"><div><div style="font-size:15px;font-weight:800" data-i18n="miningTitle">⚒️ التعدين النشط</div><small id="mineStatus"><span class="dot" id="mineDot"></span><span id="mineStateTxt">متوقف مؤقتاً</span></small></div><button class="badge" onclick="openLevels()" data-i18n="leaguesBtn">الدوريات ⓘ</button></div>
+<div class="mining-card"><div class="mining-top"><div><div class="h-title" style="font-size:15px;font-weight:800"><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.531 12.469 6.619 20.38a1 1 0 1 1-3-3l7.912-7.912"/><path d="M15.686 4.314A12.5 12.5 0 0 0 5.461 2.958 1 1 0 0 0 5.58 4.71a22 22 0 0 1 6.318 3.393"/><path d="M17.7 3.7a1 1 0 0 0-1.4 0l-4.6 4.6a1 1 0 0 0 0 1.4l2.6 2.6a1 1 0 0 0 1.4 0l4.6-4.6a1 1 0 0 0 0-1.4z"/><path d="M19.686 8.314a12.501 12.501 0 0 1 1.356 10.225 1 1 0 0 1-1.751-.119 22 22 0 0 0-3.393-6.319"/></svg></span><span data-i18n="miningTitle">التعدين النشط</span></div><small id="mineStatus"><span class="dot" id="mineDot"></span><span id="mineStateTxt">متوقف مؤقتاً</span></small></div><button class="badge" onclick="openLevels()" data-i18n="leaguesBtn">الدوريات ⓘ</button></div>
 <div class="big"><span id="balance">0</span> <small>ZYN</small></div><div class="level-line" id="levelLine"></div>
 <div class="progress"><div class="bar" id="bar"></div></div><div class="prog-info"><span id="nextTxt"></span><b id="pct">0%</b></div>
 <div class="mine-actions"><button class="btn-gold" id="mineBtn" onclick="toggleMine()">⛏️ ابدأ التعدين</button><button class="btn-ghost" onclick="claim()" data-i18n="claimBtn">💰 تحصيل</button></div><div class="err hidden" id="apiErr" data-i18n="apiErr">⚠️ الخادم غير متصل. تأكد من تشغيل PythonAnywhere Web.</div></div>
 <div class="stats-row"><div class="stat" onclick="showStat('hour')"><div data-i18n="perHourL">⚡ في الساعة</div><b id="perHour">0.0</b><span>ZYN</span></div><div class="stat" onclick="showStat('day')"><div data-i18n="perDayL">📅 يومياً</div><b class="green" id="perDay">0</b><span>ZYN</span></div><div class="stat" onclick="showStat('boost')"><div data-i18n="boostL">↗ تعزيز</div><b class="gold" id="boostVal">x1</b><span data-i18n="boostSub">المضاعف</span></div></div>
 <div class="lvl-card" onclick="openLevels()"><div class="lvl-badge">LVL<br><span id="lvlNum">1</span></div><div style="flex:1"><div class="t"><span data-i18n="levelWord">المستوى</span> <span id="lvlNum2">1</span> • <span id="leagueName"></span></div><div class="sub"><span data-i18n="lockedL">المقفل في المحفظة</span>: <span id="holdTxt">0</span> ZYN</div><div class="green" data-i18n="lvlSub2">⚡ المستوى من الكمية المقفلة، ويحدد سرعة أرباحك</div></div><div style="font-size:22px;opacity:.6">›</div></div>
-<div class="rules"><h3 data-i18n="rulesTitle">🛡️ قواعد مستويات التعدين</h3><div style="font-size:13px;color:#2ee6a8;font-weight:700">Dynamic ZYRON Vault</div>
+<div class="rules"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1 1 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></svg></span><span data-i18n="rulesTitle">قواعد مستويات التعدين</span></h3><div style="font-size:13px;color:#2ee6a8;font-weight:700">Dynamic ZYRON Vault</div>
 <div class="box" data-i18n="vaultBox"></div>
-<div class="box" data-i18n="priceBox"></div>
+<div class="box" id="priceBoxEl" data-i18n="priceBox"></div>
 <div class="box" data-i18n="burnBox"></div></div>
-<div class="card"><h3 data-i18n="tonCardTitle">🔗 محفظة TON</h3><div id="tonconnect"></div><div class="small" data-i18n="tonCardSub">اربط محفظتك ليرى التطبيق كميتك المقفلة من ZYN ويحدد مستواك.</div>
+<div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></span><span data-i18n="tonCardTitle">محفظة TON</span></h3><div id="tonconnect"></div><div class="small" data-i18n="tonCardSub">اربط محفظتك ليرى التطبيق كميتك المقفلة من ZYN ويحدد مستواك.</div>
 <div class="connecting hidden" id="connectingBox"><span class="spin"></span><span data-i18n="connecting">جاري الربط... انتظر</span></div>
 <div class="err hidden" id="connectFailBox"><span data-i18n="connectFail">تعطل الربط، حاول مرة أخرى</span><button class="btn ghost" style="margin-top:8px" onclick="connectWallet(true)" data-i18n="retryBtn">إعادة المحاولة</button></div>
 <div class="flex"><button class="btn ghost" onclick="checkOnchain()" data-i18n="checkBtn">🔄 تحقق من رصيد المحفظة</button><button class="btn ghost" onclick="connectWallet(true)" data-i18n="reconnectBtn">🔁 ربط من جديد</button></div>
@@ -122,27 +143,37 @@ radial-gradient(900px 500px at -20% 30%,#141428 0%,transparent 55%),#08080d}
 </div>
 
 <!-- SWAP -->
-<div id="tab-swap" class="hidden"><div class="card"><h3 data-i18n="swapTitle">🔄 تبادل</h3><div class="small" data-i18n="swapSub">بدّل ZYN إلى TON والعكس عبر STON.fi.</div><input class="inp" id="swapAmt" type="number" inputmode="decimal" data-i18n-ph="swapPh" placeholder="المبلغ ZYN - مثال: 10000"><div class="small" id="swapOut" style="margin-top:8px"></div><button class="btn" onclick="openSwap()" data-i18n="swapBtn">↗ فتح التبادل في STON.fi</button><div class="small" style="margin-top:8px" data-i18n="swapPrice">السعر المرجعي: 10,000 ZYN = 1 TON</div></div></div>
+<div id="tab-swap" class="hidden"><div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg></span><span data-i18n="swapTitle">تبادل</span></h3><div class="small" data-i18n="swapSub">بدّل ZYN إلى TON والعكس عبر STON.fi.</div><input class="inp" id="swapAmt" type="number" inputmode="decimal" data-i18n-ph="swapPh" placeholder="المبلغ ZYN - مثال: 10000"><div class="small" id="swapOut" style="margin-top:8px"></div><button class="btn" onclick="openSwap()" data-i18n="swapBtn">↗ فتح التبادل في STON.fi</button><div class="small" id="swapPriceEl" style="margin-top:8px" data-i18n="swapPrice">...</div></div></div>
 
 <!-- MENU -->
-<div id="tab-menu" class="hidden"><div class="card"><h3 data-i18n="tasksTitle">🎯 المهام - اربح ZYN</h3><div class="small" data-i18n="tasksSub">أنجز المهام واحصل على المكافأة مرة واحدة.</div><div class="flex"><button class="btn ghost" onclick="doTask('ch',this)">📢 <span data-i18n="taskCh">القناة</span> +500</button><button class="btn ghost" onclick="doTask('grp',this)">👥 <span data-i18n="taskGrp">المجموعة</span> +500</button></div><div class="flex"><button class="btn ghost" onclick="doTask('x',this)">𝕏 <span data-i18n="taskX">تابعنا</span> +500</button><button class="btn ghost" onclick="doTask('inv',this)">👤 <span data-i18n="taskInv">دعوة صديق</span> +1000</button></div></div><div class="card"><h3 data-i18n="boostTitle">🚀 تعزيز التعدين</h3><div class="small" id="boostTxt"></div><div class="boost-grid"><button onclick="buyBoost(2)">x2<br>1,000 ZYN</button><button onclick="buyBoost(5)">x5<br>5,000 ZYN</button><button onclick="buyBoost(10)">x10<br>10,000 ZYN</button></div></div></div>
+<div id="tab-menu" class="hidden"><div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></span><span data-i18n="tasksTitle">المهام - اربح ZYN</span></h3><div class="small" data-i18n="tasksSub">أنجز المهام واحصل على المكافأة مرة واحدة.</div><div class="flex"><button class="btn ghost" onclick="openCh()"><span data-i18n="joinCh">انضم للقناة</span> @zayronb</button><button class="btn ghost" onclick="doTask('ch',this)"><svg class="bic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/></svg> <span data-i18n="taskCh">القناة</span> +500</button><button class="btn ghost" onclick="doTask('inv',this)"><svg class="bic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg> <span data-i18n="taskInv">دعوة صديق</span> +1000</button></div></div><div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg></span><span data-i18n="boostTitle">تعزيز التعدين</span></h3><div class="small" id="boostTxt"></div><div class="boost-grid" style="grid-template-columns:1fr"><button id="boostBtn" onclick="buyBoost()">...</button></div></div></div>
 
 <!-- FRIENDS -->
-<div id="tab-friends" class="hidden"><div class="card"><h3 data-i18n="friendsTitle">👥 الأصدقاء</h3><div class="small" id="refInfo"></div><input class="inp" id="refLink" readonly><button class="btn" onclick="copyRef()" data-i18n="copyBtn">📋 نسخ رابط الإحالة</button><div class="small" data-i18n="refSub">كل صديق: +50 ZYN لك وله</div></div></div>
+<div id="tab-friends" class="hidden"><div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span data-i18n="friendsTitle">الأصدقاء</span></h3><div class="small" id="refInfo"></div><input class="inp" id="refLink" readonly><button class="btn" onclick="copyRef()" data-i18n="copyBtn">📋 نسخ رابط الإحالة</button><div class="small" data-i18n="refSub">كل صديق: +50 ZYN لك وله</div></div></div>
 
 <!-- WALLET -->
 <div id="tab-wallet" class="hidden">
 <div class="wallet-head"><div class="row"><div><div style="font-size:13px;opacity:.7" data-i18n="minedL">الرصيد المُعدَّن</div><div style="font-size:28px;font-weight:900;margin-top:6px"><span id="walletBalance">0</span> <span style="color:#ffd700;font-size:16px">ZYN</span></div></div><div class="badge2" data-i18n="inGameBadge">داخل التطبيق • لا يؤثر على المستوى</div></div></div>
 <div class="wallet-grid"><div class="card"><div class="small"><span data-i18n="vaultL">ضمان ZYRON Vault</span> • <span style="color:#2ee6a8" data-i18n="raisesL">يرفع المستوى</span></div><div style="font-size:18px;font-weight:800;margin-top:6px"><span id="vaultBal">0</span> ZYN</div></div><div class="card"><div class="small" data-i18n="totalWdL">إجمالي السحوبات</div><div style="font-size:18px;font-weight:800;margin-top:6px"><span id="totalWd">0</span> ZYN</div></div></div>
+<div class="card" id="lockCard"><h3 data-i18n="lockTitle">🔒 القفل والمستوى</h3>
+<div class="small"><span data-i18n="lockedNow">المقفل الآن</span>: <b id="lockedAmt">0</b> ZYN</div>
+<div class="small"><span data-i18n="walletHas">رصيدك في المحفظة</span>: <b id="walletHasAmt">0</b> ZYN</div>
+<div class="small" id="unlockPendMsg" style="color:#ffd700"></div>
+<div class="flex"><button class="btn" onclick="openLock()" data-i18n="lockBtn">🔒 Lock</button><button class="btn ghost" onclick="doUnlock()" data-i18n="unlockBtn">🔓 Unlock</button></div>
+<input class="inp" id="unlockAmt" type="number" min="0" style="margin-top:8px" data-i18n-ph="unlockAmtPh" placeholder="">
+<div id="lockBox" class="hidden" style="margin-top:10px"><div class="small" data-i18n="lockHow"></div>
+<div class="small" style="margin-top:8px" data-i18n="lockAddrL"></div><div class="inp" id="lockAddrShow" style="word-break:break-all;font-size:12px;color:#ffd700"></div>
+<div class="small" style="margin-top:8px" data-i18n="lockMemoL"></div><div class="inp" id="lockMemoShow" style="word-break:break-all;font-size:13px;color:#ffd700"></div>
+<div class="flex"><button class="btn ghost" onclick="copyTxt('lockAddrShow')" data-i18n="copyBtn">نسخ</button><a class="btn ghost" id="tkLink" target="_blank" rel="noopener" data-i18n="openTonkeeper">Tonkeeper</a></div>
+<button class="btn" onclick="verifyLock()" data-i18n="verifyBtn">✅ تحقق</button><div class="small" id="lockMsg"></div></div></div>
 <div class="card"><div class="flex" style="align-items:center"><div><span style="color:#2ee6a8">●</span> <span id="walletStatus"></span></div><div style="display:flex;gap:6px"><button class="btn ghost" style="margin:0;padding:8px" onclick="disconnectWallet()" data-i18n="disconnectBtn">فصل المحفظة</button><button class="btn ghost" style="margin:0;padding:8px" onclick="connectWallet(true)" data-i18n="changeBtn">تغيير</button></div></div><div class="inp" id="walletAddrShow" style="margin-top:10px;word-break:break-all;font-size:12px;color:#ffd700"></div></div>
-<div class="card"><h3 data-i18n="wdTitle">↗ سحب ZYN</h3><div class="small" data-i18n="wdRules"></div><div class="err hidden" id="wdPending"></div><input class="inp" id="wdAmount" type="number" inputmode="decimal" data-i18n-ph="wdAmtPh" placeholder="المبلغ - مثال: 10000"><input class="inp" id="wdWallet" data-i18n-ph="wdWalletPh" placeholder="محفظة TON - UQ... أو EQ..."><button class="btn" id="wdBtn" onclick="doWithdraw()" data-i18n="wdBtn">طلب سحب</button><div class="small" id="wdMsg" style="margin-top:8px"></div></div>
-<div class="card"><h3 data-i18n="wdHistoryTitle">🧾 سجل السحوبات</h3><div id="wdHistory"><div class="small" data-i18n="wdEmpty">لا توجد سحوبات بعد</div></div></div>
+<div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="12" x="2" y="6" rx="2"/><circle cx="12" cy="12" r="2"/><path d="M6 12h.01M18 12h.01"/></svg></span><span data-i18n="wdTitle">سحب ZYN</span></h3><div class="small" id="wdRulesEl" data-i18n="wdRules"></div><div class="err hidden" id="wdPending"></div><input class="inp" id="wdAmount" type="number" inputmode="decimal" data-i18n-ph="wdAmtPh" placeholder="المبلغ - مثال: 10000"><div class="small" id="wdInfo" style="margin-top:6px"></div><button class="btn" id="wdBtn" onclick="doWithdraw()" data-i18n="wdBtn">طلب سحب</button><div class="small" id="wdMsg" style="margin-top:8px"></div></div>
+<div class="card"><h3><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l4 2"/></svg></span><span data-i18n="wdHistoryTitle">سجل السحوبات</span></h3><div id="wdHistory"><div class="small" data-i18n="wdEmpty">لا توجد سحوبات بعد</div></div></div>
 </div>
 
-<div class="bottom"><button class="active" onclick="showTab('mining',this)"><span class="ic">⛏️</span><span data-i18n="tabMining">التعدين</span></button><button onclick="showTab('swap',this)"><span class="ic">↔️</span><span data-i18n="tabSwap">تبادل</span></button><button onclick="showTab('menu',this)"><span class="ic center">▦</span><span data-i18n="tabMenu">القائمة</span></button><button onclick="showTab('friends',this)"><span class="ic">👥</span><span data-i18n="tabFriends">الأصدقاء</span></button><button onclick="showTab('wallet',this)"><span class="ic">👛</span><span data-i18n="tabWallet">المحفظة</span></button></div>
-
+<div class="bottom"><button class="active" onclick="showTab('mining',this)"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14.531 12.469 6.619 20.38a1 1 0 1 1-3-3l7.912-7.912"/><path d="M15.686 4.314A12.5 12.5 0 0 0 5.461 2.958 1 1 0 0 0 5.58 4.71a22 22 0 0 1 6.318 3.393"/><path d="M17.7 3.7a1 1 0 0 0-1.4 0l-4.6 4.6a1 1 0 0 0 0 1.4l2.6 2.6a1 1 0 0 0 1.4 0l4.6-4.6a1 1 0 0 0 0-1.4z"/><path d="M19.686 8.314a12.501 12.501 0 0 1 1.356 10.225 1 1 0 0 1-1.751-.119 22 22 0 0 0-3.393-6.319"/></svg></span><span data-i18n="tabMining">التعدين</span></button><button onclick="showTab('swap',this)"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 3 4 7l4 4"/><path d="M4 7h16"/><path d="m16 21 4-4-4-4"/><path d="M20 17H4"/></svg></span><span data-i18n="tabSwap">تبادل</span></button><button onclick="showTab('menu',this)"><span class="ic center"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="7" height="7" x="3" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="3" rx="1.5"/><rect width="7" height="7" x="14" y="14" rx="1.5"/><rect width="7" height="7" x="3" y="14" rx="1.5"/></svg></span><span data-i18n="tabMenu">القائمة</span></button><button onclick="showTab('friends',this)"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span><span data-i18n="tabFriends">الأصدقاء</span></button><button onclick="showTab('wallet',this)"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg></span><span data-i18n="tabWallet">المحفظة</span></button></div>
 <!-- LEVELS MODAL -->
-<div id="levelsModal" class="hidden modal"><div class="modal-head"><h2 data-i18n="lvlsTitle">🏆 نظام الـ 500 مستوى</h2><button onclick="closeLevels()">✕</button></div>
+<div id="levelsModal" class="hidden modal"><div class="modal-head"><h2><span class="h-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg></span><span data-i18n="lvlsTitle">نظام الـ 500 مستوى</span></h2><button onclick="closeLevels()">✕</button></div>
 <div class="tabs2"><button id="tabLeaguesBtn" class="active" onclick="switchLevelTab('leagues')" data-i18n="leaguesTab">🏆 الدوريات</button><button id="tabAllBtn" onclick="switchLevelTab('all')" data-i18n="allTab">▦ جميع المستويات</button></div>
 <div id="leaguesView"><div id="leaguesList"></div><button class="btn ghost" onclick="switchLevelTab('all')" data-i18n="showAllBtn">→ عرض المتطلبات التفصيلية</button></div>
 <div id="allView" class="hidden"><div class="filters"><button class="active" onclick="filterLevels('all',this)" data-i18n="filterAll">الكل</button><button onclick="filterLevels('1-100',this)">🥉 1-100</button><button onclick="filterLevels('101-200',this)">🥈 101-200</button><button onclick="filterLevels('201-300',this)">🥇 201-300</button><button onclick="filterLevels('301-400',this)">💎 301-400</button><button onclick="filterLevels('401-500',this)">👑 401-500</button></div><div id="levelsList"></div></div>
@@ -152,80 +183,82 @@ radial-gradient(900px 500px at -20% 30%,#141428 0%,transparent 55%),#08080d}
 const API="https://zayronbot.pythonanywhere.com";
 const JETTON_MASTER="EQAJruUqgQTd-KC3QiUAoQePVzW7KubQaXcEqlhdOb4ghwyk";
 let lang=localStorage.getItem('zyron_lang')||'ar', userId=null, username='',
-    state={balance:0,pending:0,mining:0,boost:1,refs:0,refEarn:0,onchain:0,level:1,totalWd:0,pendingWithdraw:0,pendingWithdrawStatus:'',lastWithdrawAt:0},
+    state={balance:0,pending:0,mining:0,boost:1,perDay:0,effLocked:0,boostCost:0,boostBonusPerDay:0,fee:null,maxRequest:0,budgetLeft:0,refs:0,refEarn:0,onchain:0,locked:0,lockWallet:'',lockMemo:'',lockEnabled:false,jettonMaster:'',unlockPending:null,level:0,totalWd:0,pendingWithdraw:0,pendingWithdrawStatus:'',lastWithdrawAt:0},
     walletAddr='', levelFilter='all', levelTab='leagues', mineBusy=false, lastTickTime=Date.now(), connectTimer=null;
 const tg=window.Telegram?.WebApp; if(tg){tg.ready(); tg.expand();}
 
 const T={
  ar:{
-  vTag:'شبكة TON • ZYRON Miner v6',miningTitle:'⚒️ التعدين النشط',paused:'متوقف مؤقتاً',miningOn:'التعدين نشط',leaguesBtn:'الدوريات ⓘ',
+  vTag:'شبكة TON • ZYRON Miner v6',miningTitle:'التعدين النشط',paused:'متوقف مؤقتاً',miningOn:'التعدين نشط',leaguesBtn:'الدوريات ⓘ',
   startMine:'⛏️ ابدأ التعدين',stopMine:'⏸️ إيقاف التعدين',claimBtn:'💰 تحصيل',apiErr:'⚠️ الخادم غير متصل. تأكد من تشغيل PythonAnywhere Web.',
+  lockTitle:'🔒 القفل والمستوى',lockBtn:'🔒 قفل - Lock',unlockBtn:'🔓 فك القفل - Unlock',lockedNow:'المقفل الآن',walletHas:'رصيدك في المحفظة (غير مقفل، ما كيرفعش المستوى)',lockHow:'ارسل ZYN من محفظتك المربوطة إلى هذا العنوان، وضع هذا التعليق (Comment) بالضبط، ثم اضغط تحقق.',lockAddrL:'عنوان القفل',lockMemoL:'التعليق (إجباري)',copyBtn:'نسخ',verifyBtn:'✅ أرسلت، تحقق',openTonkeeper:'فتح في Tonkeeper',lockOff:'القفل غير مفعل بعد',lockOk:a=>`تم قفل ${a.toLocaleString()} ZYN ✅`,unlockAmtPh:'المبلغ المراد فكه (فارغ = الكل)',unlockConfirm:'سيرجع لك 70% فقط و30% تتحرق. الفك يدوي من الأدمن وبعد 7 أيام. المبلغ المطلوب لا يُحتسب في المستوى والأرباح من هذه اللحظة. هل أنت متأكد؟',unlockSent:'تم إرسال طلب الفك، سيعالجه الأدمن ✅',unlockPend:a=>`طلب فك قيد الانتظار: ${a.amount.toLocaleString()} ZYN (ترجع 70%). لا يحسب في المستوى من الآن، ويمكن إنهاؤه بعد ${new Date((a.unlock_at||0)*1000).toLocaleDateString()}`,needWallet:'اربط المحفظة أولا',
   perHourL:'⚡ في الساعة',perDayL:'📅 يومياً',boostL:'↗ تعزيز',boostSub:'المضاعف',levelWord:'المستوى',lockedL:'المقفل في المحفظة',
-  lvlSub2:'⚡ المستوى من الكمية المقفلة، ويحدد سرعة أرباحك',rulesTitle:'🛡️ قواعد مستويات التعدين',
+  lvlSub2:'⚡ المستوى من الكمية المقفلة، ويحدد سرعة أرباحك',rulesTitle:'قواعد مستويات التعدين',
   vaultBox:'✅ ZYRON Vault: يُحسب المستوى من الكمية المقفلة في محفظتك، وليس من رصيد التطبيق. المستوى يرتفع إذا زادت الكمية المقفلة ويهبط إذا نقصت، ولا يبقى ثابتاً.',
-  priceBox:'💱 السعر المرجعي: 10,000 ZYN = 1 TON. المستوى 1 = 500 ZYN مقفلة، المستوى 10 = 5,000، المستوى 50 = 50,000، المستوى 100 = 200,000، المستوى 500 = 5,000,000.',
-  burnBox:'🛡️ الاسترداد 70/30: يمكنك فك القفل في أي وقت عبر Burn & Exit — يعود لك 70% من الكمية المقفلة، ويُحرق 30% لحماية اقتصاد الرمز.',
-  tonCardTitle:'🔗 محفظة TON',tonCardSub:'اربط محفظتك ليرى التطبيق كميتك المقفلة من ZYN ويحدد مستواك.',
+  priceBox:e=>`💱 السعر يحدده الأدمن: 1 ZYN = $${e.price||'?'} (ليس من STON.fi). متطلب المستوى بالدولار: L1=$${e.levelsUsd[0]}، L10=$${e.levelsUsd[9]}، L50=$${e.levelsUsd[49]}، L100=$${e.levelsUsd[99]}، L500=$${e.levelsUsd[499]}. الربح اليومي ${(e.yieldL1*100).toFixed(1)}% إلى ${(e.yieldL500*100).toFixed(1)}% من متطلب المستوى (وليس من كل المقفل).`,
+  burnBox:'🛡️ الاسترداد 70/30: الفك يدوي وبعد 7 أيام. تطلب الفك، المبلغ يخرج من الحساب فورا (المستوى والأرباح)، وبعد 7 أيام الأدمن يرسل لك 70% ويحرق 30%.',
+  tonCardTitle:'محفظة TON',tonCardSub:'اربط محفظتك ليرى التطبيق كميتك المقفلة من ZYN ويحدد مستواك.',
   connecting:'جاري الربط... انتظر',connectFail:'تعطل الربط، حاول مرة أخرى',retryBtn:'إعادة المحاولة',checkBtn:'🔄 تحقق من رصيد المحفظة',reconnectBtn:'🔁 ربط من جديد',
-  swapTitle:'🔄 تبادل',swapSub:'بدّل ZYN إلى TON والعكس عبر STON.fi.',swapPh:'المبلغ ZYN - مثال: 10000',swapBtn:'↗ فتح التبادل في STON.fi',swapPrice:'السعر المرجعي: 10,000 ZYN = 1 TON',
-  tasksTitle:'🎯 المهام - اربح ZYN',tasksSub:'أنجز المهام واحصل على المكافأة مرة واحدة.',taskCh:'القناة',taskGrp:'المجموعة',taskX:'تابعنا',taskInv:'دعوة صديق',
-  boostTitle:'🚀 تعزيز التعدين',friendsTitle:'👥 الأصدقاء',copyBtn:'📋 نسخ رابط الإحالة',refSub:'كل صديق: +50 ZYN لك وله',
+  swapTitle:'تبادل',swapSub:'بدّل ZYN إلى TON والعكس عبر STON.fi.',swapPh:'المبلغ ZYN - مثال: 10000',swapBtn:'↗ فتح التبادل في STON.fi',swapPrice:e=>`السعر المرجعي (يحدده الأدمن): 1 ZYN = $${e.price||'?'}`,
+  tasksTitle:'المهام - اربح ZYN',tasksSub:'أنجز المهام واحصل على المكافأة مرة واحدة.',taskCh:'تحقق من القناة',joinCh:'انضم للقناة',taskGrp:'المجموعة',taskX:'تابعنا',taskInv:'دعوة صديق',
+  boostTitle:'تعزيز التعدين',friendsTitle:'الأصدقاء',copyBtn:'📋 نسخ رابط الإحالة',refSub:'كل صديق يقفل المستوى 1: +50 ZYN لك وله (حد أقصى 20 إحالة في اليوم)',
   minedL:'الرصيد المُعدَّن',inGameBadge:'داخل التطبيق • لا يؤثر على المستوى',vaultL:'ضمان ZYRON Vault',raisesL:'يرفع المستوى',totalWdL:'إجمالي السحوبات',
-  disconnectBtn:'فصل المحفظة',changeBtn:'تغيير',wdTitle:'↗ سحب ZYN',
-  wdRules:'ⓘ شروط السحب: الحد الأدنى 10,000 ZYN • طلب واحد معلق فقط • طلب واحد كل 48 ساعة بعد انتهاء آخر طلب • المعالجة خلال 1-24 ساعة • رسوم الشبكة 0%',
-  wdAmtPh:'المبلغ - مثال: 10000',wdWalletPh:'محفظة TON - UQ... أو EQ...',wdBtn:'طلب سحب',wdHistoryTitle:'🧾 سجل السحوبات',wdEmpty:'لا توجد سحوبات بعد',
+  disconnectBtn:'فصل المحفظة',changeBtn:'تغيير',wdTitle:'سحب ZYN',
+  wdRules:e=>`ⓘ شروط السحب: قفل المستوى 1 على الأقل • الحد الأدنى $${e.minUsd} (≈ ${fmtN(e.minWithdrawZyn)} ZYN) • الطلب الواحد حتى ${e.requestPct*100}% من المقفل • رسوم ${e.feeL1*100}% (المستوى 1) إلى ${e.feeL500*100}% (المستوى 500) • ميزانية يومية عامة ${e.budgetPct*100}% من الـ pool • طلب واحد معلق • طلب كل ${e.cooldownHours} ساعة • الدفع للمحفظة المربوطة فقط • فك القفل بعد ${e.unlockDays} أيام`,
+  wdAmtPh:'المبلغ ZYN',wdWalletPh:'محفظة TON - UQ... أو EQ...',wdBtn:'طلب سحب',wdHistoryTitle:'سجل السحوبات',wdEmpty:'لا توجد سحوبات بعد',
   tabMining:'التعدين',tabSwap:'تبادل',tabMenu:'القائمة',tabFriends:'الأصدقاء',tabWallet:'المحفظة',
-  lvlsTitle:'🏆 نظام الـ 500 مستوى',leaguesTab:'🏆 الدوريات',allTab:'▦ جميع المستويات',showAllBtn:'→ عرض المتطلبات التفصيلية',filterAll:'الكل',
-  yourStatus:'حالتك الحالية:',stLevelL:'المستوى',stSpeedL:'السرعة',stBoostL:'التعزيز',okBtn:'فهمت',
+  lvlsTitle:'نظام الـ 500 مستوى',leaguesTab:'الدوريات',allTab:'جميع المستويات',showAllBtn:'→ عرض المتطلبات التفصيلية',filterAll:'الكل',
+  yourStatus:'حالتك الحالية:',stLevelL:'المستوى',stSpeedL:'السرعة',stBoostL:'التعزيز',wdInfo:s=>s.fee===null||s.fee===undefined?'':`رسومك ${(s.fee*100).toFixed(1)}% • الحد الأقصى للطلب ${fmtN(s.maxRequest)} ZYN • المتبقي من الميزانية اليومية ${fmtN(s.budgetLeft)} ZYN`,boostBuy:(c,b)=>`⚡ تعزيز x1.5: ${fmtN(c)} ZYN (+${fmtN(b)} ZYN في اليوم)`,boostNone:'لا يوجد تعزيز متاح (اقفل مستوى أو لديك أقصى تعزيز)',okBtn:'فهمت',
   claimed:'تم التحصيل ✅',copied:'تم النسخ ✅',disconnected:'تم فصل المحفظة وإعادة المستوى إلى 1',connectFirst:'اربط محفظتك أولاً',
   connErr:'⚠️ خطأ في الاتصال',youHere:'أنت هنا',maxLevel:'وصلت إلى المستوى الأقصى 500 👑',walletConnected:'المحفظة مربوطة',walletNotConnected:'المحفظة غير مربوطة',
-  wdSent:'تم إرسال طلب السحب ✅',minWd:'الحد الأدنى 10,000 ZYN',badWallet:'أدخل عنوان محفظة صحيحاً',tonErr:'❌ خطأ في الاتصال بشبكة TON',
+  wdSent:'تم إرسال طلب السحب ✅',wdQueued:p=>`⏳ الميزانية اليومية ممتلئة. طلبك في الطابور، موقعك ${p}. ستتم معالجته بالترتيب.`,stQueued:'في الطابور ⏳',minWd:m=>m?`الحد الأدنى ${fmtN(m)} ZYN`:'المبلغ غير صالح',badWallet:'أدخل عنوان محفظة صحيحاً',tonErr:'❌ خطأ في الاتصال بشبكة TON',
   stPending:'قيد المعالجة ⏳',stSending:'قيد الإرسال 📤',stDone:'تم ✅',stRejected:'مرفوض ❌',
   showFirst30:'عرض أول 30 مستوى - استخدم الفلاتر لعرض الباقي',inactive:'غير نشط',lvlStopped:'التعدين متوقف',perDay:'/ يوم',perHour:'/ ساعة',lockedUnit:'ZYN مقفلة',
   leagueNames:['غير نشط','🥉 برونزي','🥈 فضي','🥇 ذهبي','💎 بلاتيني','👑 أسطوري'],
   refs:s=>`إحالاتك: ${s.refs} • أرباح الإحالة: ${s.refEarn} ZYN`,
   boost:s=>`التعزيز الحالي: x${s.boost}`,
-  wdPendingMsg:s=>`⏳ لديك طلب سحب ${Math.floor(s.pendingWithdraw).toLocaleString()} ZYN ${s.pendingWithdrawStatus==='sending'?'قيد الإرسال 📤':'قيد المعالجة ⏳'} - لا يمكن تقديم طلب جديد الآن.`,
+  wdPendingMsg:s=>`⏳ لديك طلب سحب ${Math.floor(s.pendingWithdraw).toLocaleString()} ZYN ${s.pendingWithdrawStatus==='sending'?'قيد الإرسال 📤':(s.pendingWithdrawStatus==='queued'?`في الطابور (الموقع ${s.withdrawQueue?s.withdrawQueue.position:'-'}) ⏳`:'قيد المعالجة ⏳')} - لا يمكن تقديم طلب جديد الآن.`,
   nextTxt:(need,nxt)=>`${Math.max(0,Math.floor(need)).toLocaleString()} ZYN مقفلة إلى المستوى ${nxt}`,
   levelLine:(lvl,lg,on)=>`المستوى ${lvl} • ${lg} • ${on?'التعدين نشط':'متوقف مؤقتاً'}`,
-  swapOut:ton=>`ستحصل على: ${ton.toFixed(4)} TON`,
-  onchainMsg:(bal,lvl)=>`${bal.toLocaleString()} ZYN مقفلة • المستوى ${lvl}`,
-  balToast:bal=>`رصيدك المقفل في المحفظة: ${bal.toLocaleString()} ZYN`
+  swapOut:usd=>`القيمة التقريبية: $${usd.toFixed(4)}`,
+  onchainMsg:(bal,lvl)=>`لديك ${bal.toLocaleString()} ZYN في محفظتك • المستوى ${lvl} (المستوى من القفل فقط)`,
+  balToast:bal=>`رصيدك في المحفظة (غير مقفل): ${bal.toLocaleString()} ZYN`
  },
  en:{
-  vTag:'TON network • ZYRON Miner v6',miningTitle:'⚒️ Active Mining',paused:'Paused',miningOn:'Mining active',leaguesBtn:'Leagues ⓘ',
+  vTag:'TON network • ZYRON Miner v6',miningTitle:'Active Mining',paused:'Paused',miningOn:'Mining active',leaguesBtn:'Leagues ⓘ',
   startMine:'⛏️ Start mining',stopMine:'⏸️ Stop mining',claimBtn:'💰 Claim',apiErr:'⚠️ Server not reachable. Make sure the PythonAnywhere web app is running.',
+  lockTitle:'🔒 Lock & Level',lockBtn:'🔒 Lock',unlockBtn:'🔓 Unlock',lockedNow:'Locked now',walletHas:'In your wallet (not locked, does not raise level)',lockHow:'Send ZYN from your connected wallet to this address with exactly this comment (memo), then press Verify.',lockAddrL:'Lock address',lockMemoL:'Comment (required)',copyBtn:'Copy',verifyBtn:'✅ I sent it, verify',openTonkeeper:'Open in Tonkeeper',lockOff:'Locking is not enabled yet',lockOk:a=>`Locked ${a.toLocaleString()} ZYN ✅`,unlockAmtPh:'Amount to unlock (empty = all)',unlockConfirm:'You get back only 70%, 30% is burned. Unlock is manual by the admin and takes 7 days. The amount stops counting for level and earnings right now. Continue?',unlockSent:'Unlock request sent, the admin will process it ✅',unlockPend:a=>`Unlock waiting: ${a.amount.toLocaleString()} ZYN (70% returned). It no longer counts for your level, and can be completed after ${new Date((a.unlock_at||0)*1000).toLocaleDateString()}`,needWallet:'Connect your wallet first',
   perHourL:'⚡ Per hour',perDayL:'📅 Daily',boostL:'↗ Boost',boostSub:'Multiplier',levelWord:'Level',lockedL:'Locked in wallet',
-  lvlSub2:'⚡ Your level comes from the locked amount and sets your earning speed',rulesTitle:'🛡️ Mining level rules',
+  lvlSub2:'⚡ Your level comes from the locked amount and sets your earning speed',rulesTitle:'Mining level rules',
   vaultBox:'✅ ZYRON Vault: your level is computed from the locked amount in your wallet, not your in-app balance. It rises when the locked amount grows and falls when it shrinks. It never stays fixed.',
-  priceBox:'💱 Reference price: 10,000 ZYN = 1 TON. Level 1 = 500 ZYN locked, level 10 = 5,000, level 50 = 50,000, level 100 = 200,000, level 500 = 5,000,000.',
-  burnBox:'🛡️ 70/30 exit: unlock anytime via Burn & Exit — 70% of the locked amount returns to you, 30% is burned to protect the token economy.',
-  tonCardTitle:'🔗 TON Wallet',tonCardSub:'Connect your wallet so the app can see your locked ZYN and set your level.',
+  priceBox:e=>`💱 The price is set by the admin: 1 ZYN = $${e.price||'?'} (not read from STON.fi). Level requirement in USD: L1=$${e.levelsUsd[0]}, L10=$${e.levelsUsd[9]}, L50=$${e.levelsUsd[49]}, L100=$${e.levelsUsd[99]}, L500=$${e.levelsUsd[499]}. Daily yield ${(e.yieldL1*100).toFixed(1)}% down to ${(e.yieldL500*100).toFixed(1)}% of the level requirement (not of everything locked).`,
+  burnBox:'🛡️ 70/30 exit: unlock is manual and takes 7 days. The amount stops counting at once (level and earnings); after 7 days the admin sends 70% back and burns 30%.',
+  tonCardTitle:'TON Wallet',tonCardSub:'Connect your wallet so the app can see your locked ZYN and set your level.',
   connecting:'Connecting... please wait',connectFail:'Connection failed, try again',retryBtn:'Retry',checkBtn:'🔄 Check wallet balance',reconnectBtn:'🔁 Reconnect',
-  swapTitle:'🔄 Swap',swapSub:'Swap ZYN to TON and back via STON.fi.',swapPh:'Amount ZYN - e.g. 10000',swapBtn:'↗ Open swap on STON.fi',swapPrice:'Reference price: 10,000 ZYN = 1 TON',
-  tasksTitle:'🎯 Tasks - earn ZYN',tasksSub:'Complete tasks and get a one-time reward.',taskCh:'Channel',taskGrp:'Group',taskX:'Follow us',taskInv:'Invite a friend',
-  boostTitle:'🚀 Mining boost',friendsTitle:'👥 Friends',copyBtn:'📋 Copy referral link',refSub:'Each friend: +50 ZYN for you and them',
+  swapTitle:'Swap',swapSub:'Swap ZYN to TON and back via STON.fi.',swapPh:'Amount ZYN - e.g. 10000',swapBtn:'↗ Open swap on STON.fi',swapPrice:e=>`Reference price (set by the admin): 1 ZYN = $${e.price||'?'}`,
+  tasksTitle:'Tasks - earn ZYN',tasksSub:'Complete tasks and get a one-time reward.',taskCh:'Verify channel',joinCh:'Join channel',taskGrp:'Group',taskX:'Follow us',taskInv:'Invite a friend',
+  boostTitle:'Mining boost',friendsTitle:'Friends',copyBtn:'📋 Copy referral link',refSub:'Each friend who locks level 1: +50 ZYN for you and them (max 20 referrals per day)',
   minedL:'Mined balance',inGameBadge:'In-app • does not affect level',vaultL:'ZYRON Vault stake',raisesL:'raises your level',totalWdL:'Total withdrawn',
-  disconnectBtn:'Disconnect wallet',changeBtn:'Change',wdTitle:'↗ Withdraw ZYN',
-  wdRules:'ⓘ Withdrawal rules: minimum 10,000 ZYN • only one open request • one request per 48h after the last one ends • processing within 1-24h • 0% network fee',
-  wdAmtPh:'Amount - e.g. 10000',wdWalletPh:'TON wallet - UQ... or EQ...',wdBtn:'Request withdrawal',wdHistoryTitle:'🧾 Withdrawal history',wdEmpty:'No withdrawals yet',
+  disconnectBtn:'Disconnect wallet',changeBtn:'Change',wdTitle:'Withdraw ZYN',
+  wdRules:e=>`ⓘ Withdrawal rules: lock at least level 1 • minimum $${e.minUsd} (≈ ${fmtN(e.minWithdrawZyn)} ZYN) • one request up to ${e.requestPct*100}% of your locked amount • fee ${e.feeL1*100}% (level 1) down to ${e.feeL500*100}% (level 500) • shared daily budget ${e.budgetPct*100}% of the pool • one open request • one request per ${e.cooldownHours}h • paid only to your linked wallet • unlock takes ${e.unlockDays} days`,
+  wdAmtPh:'Amount ZYN',wdWalletPh:'TON wallet - UQ... or EQ...',wdBtn:'Request withdrawal',wdHistoryTitle:'Withdrawal history',wdEmpty:'No withdrawals yet',
   tabMining:'Mining',tabSwap:'Swap',tabMenu:'Menu',tabFriends:'Friends',tabWallet:'Wallet',
-  lvlsTitle:'🏆 The 500-level system',leaguesTab:'🏆 Leagues',allTab:'▦ All levels',showAllBtn:'→ View detailed requirements',filterAll:'All',
-  yourStatus:'Your current status:',stLevelL:'Level',stSpeedL:'Speed',stBoostL:'Boost',okBtn:'Got it',
+  lvlsTitle:'The 500-level system',leaguesTab:'Leagues',allTab:'All levels',showAllBtn:'→ View detailed requirements',filterAll:'All',
+  yourStatus:'Your current status:',stLevelL:'Level',stSpeedL:'Speed',stBoostL:'Boost',wdInfo:s=>s.fee===null||s.fee===undefined?'':`Your fee ${(s.fee*100).toFixed(1)}% • max per request ${fmtN(s.maxRequest)} ZYN • daily budget left ${fmtN(s.budgetLeft)} ZYN`,boostBuy:(c,b)=>`⚡ Boost x1.5: ${fmtN(c)} ZYN (+${fmtN(b)} ZYN per day)`,boostNone:'No boost available (lock a level first, or you already have the max)',okBtn:'Got it',
   claimed:'Claimed ✅',copied:'Copied ✅',disconnected:'Wallet disconnected, level reset to 1',connectFirst:'Connect your wallet first',
   connErr:'⚠️ Connection error',youHere:'You are here',maxLevel:'Max level 500 reached 👑',walletConnected:'Wallet connected',walletNotConnected:'Wallet not connected',
-  wdSent:'Withdrawal request sent ✅',minWd:'Minimum is 10,000 ZYN',badWallet:'Enter a valid wallet address',tonErr:'❌ TON network error',
+  wdSent:'Withdrawal request sent ✅',wdQueued:p=>`⏳ Daily budget is full. Your request is queued at position ${p}. It is processed in order.`,stQueued:'Queued ⏳',minWd:m=>m?`Minimum is ${fmtN(m)} ZYN`:'Invalid amount',badWallet:'Enter a valid wallet address',tonErr:'❌ TON network error',
   stPending:'Pending ⏳',stSending:'Sending 📤',stDone:'Done ✅',stRejected:'Rejected ❌',
   showFirst30:'Showing first 30 levels - use the filters for the rest',inactive:'Inactive',lvlStopped:'Mining stopped',perDay:'/ day',perHour:'/ hour',lockedUnit:'ZYN locked',
   leagueNames:['Inactive','🥉 Bronze','🥈 Silver','🥇 Gold','💎 Platinum','👑 Legendary'],
   refs:s=>`Referrals: ${s.refs} • Referral earnings: ${s.refEarn} ZYN`,
   boost:s=>`Current boost: x${s.boost}`,
-  wdPendingMsg:s=>`⏳ You have a ${Math.floor(s.pendingWithdraw).toLocaleString()} ZYN withdrawal ${s.pendingWithdrawStatus==='sending'?'being sent 📤':'pending ⏳'} - you cannot request a new one now.`,
+  wdPendingMsg:s=>`⏳ You have a ${Math.floor(s.pendingWithdraw).toLocaleString()} ZYN withdrawal ${s.pendingWithdrawStatus==='sending'?'being sent 📤':(s.pendingWithdrawStatus==='queued'?`queued (position ${s.withdrawQueue?s.withdrawQueue.position:'-'}) ⏳`:'pending ⏳')} - you cannot request a new one now.`,
   nextTxt:(need,nxt)=>`${Math.max(0,Math.floor(need)).toLocaleString()} ZYN locked to reach level ${nxt}`,
   levelLine:(lvl,lg,on)=>`Level ${lvl} • ${lg} • ${on?'Mining active':'Paused'}`,
-  swapOut:ton=>`You will get: ${ton.toFixed(4)} TON`,
-  onchainMsg:(bal,lvl)=>`${bal.toLocaleString()} ZYN locked • Level ${lvl}`,
-  balToast:bal=>`Your locked wallet balance: ${bal.toLocaleString()} ZYN`
+  swapOut:usd=>`Approx. value: $${usd.toFixed(4)}`,
+  onchainMsg:(bal,lvl)=>`You have ${bal.toLocaleString()} ZYN in your wallet • Level ${lvl} (level comes from locking only)`,
+  balToast:bal=>`Your wallet balance (not locked): ${bal.toLocaleString()} ZYN`
  }
 };
 const t=k=>T[lang][k];
@@ -240,23 +273,36 @@ function setLang(l){ lang=l; localStorage.setItem('zyron_lang',l); document.getE
 function showTab(tab,el){['mining','swap','menu','friends','wallet'].forEach(x=>document.getElementById('tab-'+x).classList.add('hidden')); document.getElementById('tab-'+tab).classList.remove('hidden'); document.querySelectorAll('.bottom button').forEach(b=>b.classList.remove('active')); if(el) el.classList.add('active'); if(tab==='wallet') loadWithdrawals();}
 
 // Level system: identical formula to app.py / zyron_bot.py
-function reqFor(l){ l=Math.floor(l); if(l<=1) return 500; if(l<=10) return 500*Math.pow(10,(l-1)/9); if(l<=50) return 5000*Math.pow(10,(l-10)/40); if(l<=100) return 50000*Math.pow(4,(l-50)/50); return 200000*Math.pow(25,(l-100)/400); }
-function levelFrom(h){ h=parseFloat(h||0); if(h<500) return 1; let lvl=1; for(let l=1;l<=500;l++){ if(reqFor(l)<=h) lvl=l; else break; } return lvl; }
-function rewardFor(l){ l=parseInt(l||0); if(l<=0) return 0; if(l>=500) return 1000000; return 600+l*l*4; }
+let econ=null;   // economy table sent by /api/auth: price, USD requirements, yield/fee parameters (the server decides, the app only shows)
+function price(){ return econ && econ.price>0 ? econ.price : 0; }
+function reqFor(l){ l=Math.max(1,Math.min(500,Math.floor(l))); const p=price(); return (econ && p>0) ? econ.levelsUsd[l-1]/p : null; }
+function rateFor(l){ l=Math.max(1,Math.min(500,Math.floor(l))); return econ.yieldL1+(econ.yieldL500-econ.yieldL1)*(l-1)/499; }
+function rewardFor(l){ l=parseInt(l||0); const r=reqFor(Math.max(1,l)); return (!econ || l<=0 || r===null) ? 0 : rateFor(l)*r; }   // base ZYN per day at level l, no boost
+function fmtN(n){ if(n===null||n===undefined||!isFinite(n)) return '—'; return n>=100 ? Math.floor(n).toLocaleString() : n.toLocaleString(undefined,{maximumFractionDigits:2}); }
+function fmtReq(l){ return fmtN(reqFor(l)); }
 function leagueFor(l){ const n=t('leagueNames'); if(l<=0) return n[0]; if(l<=100) return n[1]; if(l<=200) return n[2]; if(l<=300) return n[3]; if(l<=400) return n[4]; return n[5]; }
-function holdBase(){ return Math.max(0, state.onchain||0); }
-function livePending(){ if(!state.mining) return state.pending||0; const perSec=rewardFor(levelFrom(holdBase()))*(state.boost||1)/86400; return (state.pending||0)+perSec*(Date.now()-lastTickTime)/1000; }
-function nextInfo(){ const lvl=state.level; if(lvl>=500) return {next:500, req:reqFor(500), pct:100}; const nxt=lvl+1; const req=reqFor(nxt); const prev=lvl<=1?0:reqFor(lvl); const cur=holdBase(); const pct=Math.min(100,Math.max(0,(cur-prev)/Math.max(1,(req-prev))*100)); return {next:nxt, req, pct}; }
+function holdBase(){ return Math.max(0, (state.effLocked!==undefined ? state.effLocked : state.locked)||0); }  // level comes ONLY from the locked amount that still counts (a pending unlock does not count)
+function livePending(){ if(!state.mining) return state.pending||0; const perSec=(state.perDay||0)/86400; return (state.pending||0)+perSec*(Date.now()-lastTickTime)/1000; }
+function nextInfo(){ const lvl=state.level||0; if(lvl>=500) return {next:500, req:reqFor(500)||0, pct:100}; const nxt=lvl+1; const req=reqFor(nxt); if(req===null) return {next:nxt, req:0, pct:0}; const prev=lvl<=0?0:reqFor(lvl); const cur=holdBase(); const pct=Math.min(100,Math.max(0,(cur-prev)/Math.max(1e-9,(req-prev))*100)); return {next:nxt, req, pct}; }
 function fmt(n){ return Math.floor(n).toLocaleString(); }
 
+function renderEcon(){
+  if(!econ) return;
+  const g=id=>document.getElementById(id); const p=price();
+  if(g('priceBoxEl')) g('priceBoxEl').textContent=t('priceBox')(econ);
+  if(g('wdRulesEl')) g('wdRulesEl').textContent=t('wdRules')(econ);
+  if(g('swapPriceEl')) g('swapPriceEl').textContent=t('swapPrice')(econ);
+  if(g('wdInfo')) g('wdInfo').textContent=t('wdInfo')(state);
+  if(g('swapOut')) g('swapOut').textContent=t('swapOut')(parseFloat((g('swapAmt')||{}).value||'0')*p);
+}
 function render(){
-  const lvl=levelFrom(holdBase()); state.level=lvl;
+  const lvl=state.level||0;   // computed by the server
   const total=(state.balance||0)+livePending();
-  const perDay=rewardFor(lvl)*(state.boost||1); const perHour=perDay/24;
+  const perDay=state.perDay||0; const perHour=perDay/24;
   document.getElementById('balance').textContent=fmt(total);
   document.getElementById('walletBalance').textContent=fmt(total);
-  document.getElementById('vaultBal').textContent=fmt(state.onchain||0);
-  document.getElementById('holdTxt').textContent=fmt(state.onchain||0);
+  document.getElementById('vaultBal').textContent=fmt(state.locked||0); renderLock();
+  document.getElementById('holdTxt').textContent=fmt(state.locked||0);
   document.getElementById('totalWd').textContent=fmt(state.totalWd||0);
   document.getElementById('levelLine').textContent=t('levelLine')(lvl,leagueFor(lvl),!!state.mining);
   document.getElementById('mineStateTxt').textContent=state.mining?t('miningOn'):t('paused');
@@ -265,7 +311,7 @@ function render(){
   document.getElementById('lvlNum').textContent=lvl; document.getElementById('lvlNum2').textContent=lvl;
   document.getElementById('leagueName').textContent=leagueFor(lvl);
   document.getElementById('perHour').textContent=perHour.toFixed(1);
-  document.getElementById('perDay').textContent=fmt(perDay);
+  document.getElementById('perDay').textContent=fmtN(perDay);
   document.getElementById('boostVal').textContent='x'+(state.boost||1);
   document.getElementById('walletStatus').textContent=walletAddr?t('walletConnected'):t('walletNotConnected');
   document.getElementById('walletAddrShow').textContent=walletAddr||t('walletNotConnected');
@@ -279,10 +325,11 @@ function render(){
   document.getElementById('stLevel').textContent=`${lvl} / 500`;
   document.getElementById('stSpeed').textContent=perHour.toFixed(1)+' '+t('perHour');
   document.getElementById('stBoost').textContent='x'+(state.boost||1);
-  document.getElementById('swapOut').textContent=t('swapOut')(parseFloat(document.getElementById('swapAmt').value||'0')/10000);
+  renderEcon();
   const pw=document.getElementById('wdPending'); const wdBtn=document.getElementById('wdBtn');
   if(state.pendingWithdraw>0){ pw.classList.remove('hidden'); pw.textContent=t('wdPendingMsg')(state); wdBtn.disabled=true; }
   else { pw.classList.add('hidden'); wdBtn.disabled=false; }
+  const bb=document.getElementById('boostBtn'); if(bb){ const bc=state.boostCost||0; bb.textContent = bc>0 ? t('boostBuy')(bc,state.boostBonusPerDay||0) : t('boostNone'); bb.disabled = !(bc>0); }
   const lm=document.getElementById('levelsModal'); if(lm && !lm.classList.contains('hidden')){ renderLeagues(); renderLevels(); }
 }
 
@@ -296,12 +343,12 @@ function showApiErr(show){ document.getElementById('apiErr').classList.toggle('h
 
 async function auth(){
   const startParam = tg?.initDataUnsafe?.start_param || new URLSearchParams(location.search).get('start') || '';
-  userId = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : (localStorage.getItem('zyron_test_uid') || 'test_'+Math.floor(Math.random()*1e6));
-  if(!tg?.initDataUnsafe?.user?.id) localStorage.setItem('zyron_test_uid', userId);
-  username = tg?.initDataUnsafe?.user?.username || '';
+  userId = tg?.initDataUnsafe?.user?.id ? String(tg.initDataUnsafe.user.id) : null; // display only (referral link), never sent to the server
+  // identity comes ONLY from Telegram initData, verified by the server. No test uid anymore.
+  if(!tg?.initData){ showApiErr(true); render(); return; }
   try{
-    const res = await api('/api/auth', {uid:userId, username, start_param:startParam});
-    if(res.ok){ applyUser(res.user); showApiErr(false); } else showApiErr(true);
+    const res = await api('/api/auth', {init_data:tg?.initData||'', start_param:startParam});
+    if(res.ok){ if(res.economy) econ=res.economy; applyUser(res.user); showApiErr(false); } else showApiErr(true);
   }catch(e){ showApiErr(true); }
   render();
 }
@@ -310,29 +357,30 @@ async function toggleMine(){
   const btn=document.getElementById('mineBtn'); btn.disabled=true;
   const act = state.mining ? 'stop':'start';
   try{
-    const res = await api('/api/mine',{user_id:userId, action:act});
+    const res = await api('/api/mine',{init_data:tg?.initData||'', action:act});
     if(res.ok){ state.mining=res.mining; state.pending=res.pending; state.balance=res.balance; state.level=res.level; lastTickTime=Date.now(); showApiErr(false); }
   }catch(e){ showApiErr(true); }
   btn.disabled=false; mineBusy=false; render();
 }
 async function claim(){
   try{
-    const res = await api('/api/mine',{user_id:userId, action:'claim'});
+    const res = await api('/api/mine',{init_data:tg?.initData||'', action:'claim'});
     if(res.ok){ state.balance=res.balance; state.pending=res.pending; lastTickTime=Date.now(); toast(t('claimed')); }
   }catch(e){ toast(t('connErr')); }
   render();
 }
 async function doWithdraw(){
   const amt = parseFloat(document.getElementById('wdAmount').value||'0');
-  const w = document.getElementById('wdWallet').value.trim() || walletAddr;
   const msg=document.getElementById('wdMsg');
   if(state.pendingWithdraw>0){ msg.textContent=t('wdPendingMsg')(state); return; }
-  if(amt<10000){ msg.textContent=t('minWd'); return; }
-  if(!w || !(w.startsWith('UQ')||w.startsWith('EQ')) || w.length<40){ msg.textContent=t('badWallet'); return; }
+  if(!walletAddr && !state.wallet){ msg.textContent=t('connectFirst'); return; }
+  if(!(amt>0)){ msg.textContent=t('minWd')(econ&&econ.minWithdrawZyn); return; }
+  if(econ && econ.minWithdrawZyn && amt<econ.minWithdrawZyn){ msg.textContent=t('minWd')(econ.minWithdrawZyn); return; }
   document.getElementById('wdBtn').disabled=true;
   try{
-    const res = await api('/api/withdraw',{user_id:userId, amount:amt, wallet:w});
-    if(res.ok){ state.balance=res.balance; state.pendingWithdraw=amt; state.pendingWithdrawStatus='pending'; msg.textContent=t('wdSent'); loadWithdrawals(); }
+    // no wallet is sent: the server pays ONLY the wallet linked to the account
+    const res = await api('/api/withdraw',{init_data:tg?.initData||'', amount:amt});
+    if(res.ok){ state.balance=res.balance; state.pendingWithdraw=amt; state.pendingWithdrawStatus=res.queued?'queued':'pending'; if(res.queued){state.withdrawQueue={position:res.position};} msg.textContent=(res.queued?t('wdQueued')(res.position):t('wdSent'))+(res.net!==undefined&&res.net!==null?` (${fmtN(res.net)} ZYN)`:''); loadWithdrawals(); }
     else { msg.textContent='❌ '+(res.error||''); document.getElementById('wdBtn').disabled=false; }
   }catch(e){ msg.textContent=t('connErr'); document.getElementById('wdBtn').disabled=false; }
   render();
@@ -341,39 +389,41 @@ async function loadWithdrawals(){
   const box=document.getElementById('wdHistory');
   if(!userId){ return; }
   try{
-    const res = await api('/api/withdrawals',{user_id:userId});
+    const res = await api('/api/withdrawals',{init_data:tg?.initData||''});
     if(!res.ok){ return; }
     const rows=res.withdrawals||[];
     if(!rows.length){ box.innerHTML=`<div class="small">${t('wdEmpty')}</div>`; return; }
-    const stName={pending:t('stPending'),sending:t('stSending'),done:t('stDone'),rejected:t('stRejected')};
+    const stName={queued:t('stQueued'),pending:t('stPending'),sending:t('stSending'),done:t('stDone'),rejected:t('stRejected')};
     box.innerHTML=rows.map(r=>{
       const d=new Date((r.created_at||0)*1000);
       const ds=d.toLocaleString(lang==='ar'?'ar-MA':'en-GB',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'});
       const wk=r.wallet? r.wallet.slice(0,6)+'…'+r.wallet.slice(-4) : '-';
-      return `<div class="wd-row"><div><div class="a">${fmt(r.amount)} ZYN</div><div class="small">${ds} • ${wk}</div></div><span class="wd-st ${r.status}">${stName[r.status]||r.status}</span></div>`;
+      return `<div class="wd-row"><div><div class="a">${fmtN(r.amount)} ZYN${(r.net!==null&&r.net!==undefined)?' → '+fmtN(r.net):''}</div><div class="small">${ds} • ${wk}</div></div><span class="wd-st ${r.status}">${stName[r.status]||r.status}</span></div>`;
     }).join('');
   }catch(e){}
 }
-async function buyBoost(m){
+async function buyBoost(){
   try{
-    const res = await api('/api/boost',{user_id:userId, mult:m});
-    if(res.ok){ state.boost=res.boost; toast(`x${m} ✅`); auth(); }
+    const res = await api('/api/boost',{init_data:tg?.initData||''});
+    if(res.ok){ state.boost=res.boost; toast(`x${res.boost} ✅`); auth(); }
     else toast('❌ '+(res.error||''));
   }catch(e){ toast(t('connErr')); }
   render();
 }
+const CH_URL='https://t.me/zayronb';
+function openCh(){ try{ if(tg&&tg.openTelegramLink){ tg.openTelegramLink(CH_URL); return; } }catch(e){} window.open(CH_URL,'_blank'); }
 async function doTask(k,el){
   if(el) el.disabled=true;
   try{
-    const res = await api('/api/task',{user_id:userId, task:k});
+    const res = await api('/api/task',{init_data:tg?.initData||'', task:k});
     if(res.ok){ toast(`+${res.reward} ZYN ✅`); auth(); }
     else { toast('❌ '+(res.error||'')); if(el) el.disabled=false; }
   }catch(e){ toast(t('connErr')); if(el) el.disabled=false; }
 }
 function copyRef(){ const v=document.getElementById('refLink').value; if(navigator.clipboard?.writeText){ navigator.clipboard.writeText(v).then(()=>toast(t('copied'))).catch(()=>fallbackCopy(v)); } else fallbackCopy(v); }
 function fallbackCopy(v){ const i=document.getElementById('refLink'); i.select(); document.execCommand('copy'); toast(t('copied')); }
-function showStat(kind){ if(kind==='hour') toast(`⚡ ${(rewardFor(state.level)*(state.boost||1)/24).toFixed(1)} ZYN ${t('perHour')}`); if(kind==='day') toast(`📅 ${fmt(rewardFor(state.level)*(state.boost||1))} ZYN ${t('perDay')}`); if(kind==='boost') toast(`↗ ${t('boost')(state)}`); }
-function updateSwap(){ const amt=parseFloat(document.getElementById('swapAmt').value||'0'); document.getElementById('swapOut').textContent=t('swapOut')(amt/10000); }
+function showStat(kind){ if(kind==='hour') toast(`⚡ ${((state.perDay||0)/24).toFixed(2)} ZYN ${t('perHour')}`); if(kind==='day') toast(`📅 ${fmtN(state.perDay||0)} ZYN ${t('perDay')}`); if(kind==='boost') toast(`↗ ${t('boost')(state)}`); }
+function updateSwap(){ renderEcon(); }
 function openSwap(){ window.open('https://app.ston.fi/swap?chartVisible=false&ft=TON&tt=ZYN','_blank'); }
 document.getElementById('swapAmt')?.addEventListener('input', updateSwap);
 
@@ -398,31 +448,66 @@ function connectWallet(fresh){
   },15000);
   try{ tc.openModal(); }catch(e){ showConnecting(false); showConnectFail(true); }
 }
+let tcReady=false;
+async function resetWalletState(){
+  clearTimeout(connectTimer);
+  walletAddr=''; state.onchain=0;
+  showConnecting(false); showConnectFail(false);
+  for(let i=0;i<3;i++){ try{ const r=await api('/api/update_onchain',{init_data:tg?.initData||'', wallet:''}); if(r&&r.ok) break; }catch(e){} await new Promise(r=>setTimeout(r,1000)); }
+  render();
+}
 async function disconnectWallet(){
   try{ if(window.tc?.disconnect) await tc.disconnect(); }catch(e){}
   clearTonStorage();
-  clearTimeout(connectTimer);
-  walletAddr=''; state.onchain=0; state.level=1;
-  showConnecting(false); showConnectFail(false);
-  try{ await api('/api/update_onchain',{user_id:userId, onchain:0, wallet:''}); }catch(e){}
+  await resetWalletState();
   toast(t('disconnected'));
-  render();
 }
 async function checkOnchain(){
   if(!walletAddr){ toast(t('connectFirst')); return; }
   const m=document.getElementById('onchainMsg'); m.textContent='⏳ ...';
   try{
-    const r=await fetch(`https://tonapi.io/v2/accounts/${walletAddr}/jettons?currencies=USD`);
-    const j=await r.json(); let bal=0;
-    (j.balances||[]).forEach(b=>{ if(b.jetton?.address===JETTON_MASTER || b.jetton?.symbol==='ZYN') bal=parseFloat(b.balance)/(10**(b.jetton?.decimals??9)); });
-    state.onchain=bal;
-    await api('/api/update_onchain',{user_id:userId, onchain:bal, wallet:walletAddr});
-    m.textContent=t('onchainMsg')(bal, levelFrom(bal));
+    // the server reads the balance from TonAPI (by jetton master address); the client number is never sent or trusted
+    const r=await api('/api/update_onchain',{init_data:tg?.initData||'', wallet:walletAddr});
+    if(!r.ok) throw new Error(r.error||'err');
+    const bal=r.onchain||0; state.onchain=bal; state.locked=r.locked||0; if(r.effLocked!==undefined) state.effLocked=r.effLocked; if(r.level!==undefined) state.level=r.level;
+    m.textContent=t('onchainMsg')(bal, state.level);
     toast(t('balToast')(bal));
   }catch(e){ m.textContent=t('tonErr'); }
   render();
 }
 
+
+// ---------- Lock / Unlock (server verifies everything on-chain; the app never sends an amount for locking) ----------
+function renderLock(){
+  const e=id=>document.getElementById(id); if(!e('lockedAmt')) return;
+  e('lockedAmt').textContent=fmt(state.locked||0); e('walletHasAmt').textContent=fmt(state.onchain||0);
+  e('lockAddrShow').textContent=state.lockWallet||t('lockOff'); e('lockMemoShow').textContent=state.lockMemo||'';
+  const up=state.unlockPending; e('unlockPendMsg').textContent=up?t('unlockPend')(up):'';
+  if(state.lockWallet&&state.jettonMaster) e('tkLink').href='https://app.tonkeeper.com/transfer/'+encodeURIComponent(state.lockWallet)+'?jetton='+encodeURIComponent(state.jettonMaster)+'&text='+encodeURIComponent(state.lockMemo||'');
+}
+function openLock(){ if(!walletAddr){ toast(t('needWallet')); return; } if(!state.lockEnabled){ toast(t('lockOff')); return; } document.getElementById('lockBox').classList.toggle('hidden'); renderLock(); }
+function copyTxt(id){ try{ navigator.clipboard.writeText(document.getElementById(id).textContent); toast(t('copied')); }catch(e){} }
+async function verifyLock(){
+  const m=document.getElementById('lockMsg'); m.textContent='⏳ ...';
+  try{
+    const r=await api('/api/lock_verify',{init_data:tg?.initData||''});
+    state.locked=r.locked||0; if(r.effLocked!==undefined) state.effLocked=r.effLocked; if(r.level!==undefined) state.level=r.level;
+    m.textContent=r.ok?t('lockOk')(r.credited):(r.error||'');
+    if(r.ok) toast(t('lockOk')(r.credited));
+  }catch(e){ m.textContent=t('connErr'); }
+  render();
+}
+async function doUnlock(){
+  if(!(holdBase()>0)) return;
+  if(!confirm(t('unlockConfirm'))) return;
+  const v=document.getElementById('unlockAmt').value.trim();
+  try{
+    const r=await api('/api/unlock_request',{init_data:tg?.initData||'', amount:v?parseFloat(v):null});
+    if(!r.ok){ toast(r.error||t('connErr')); return; }
+    state.unlockPending=r.request; toast(t('unlockSent'));
+  }catch(e){ toast(t('connErr')); }
+  render();
+}
 // ---------- Levels modal ----------
 function openLevels(){ document.getElementById('levelsModal').classList.remove('hidden'); renderLeagues(); renderLevels(); }
 function closeLevels(){ document.getElementById('levelsModal').classList.add('hidden'); }
@@ -433,8 +518,8 @@ function renderLeagues(){
   const defs=[[1,100,n[1]],[101,200,n[2]],[201,300,n[3]],[301,400,n[4]],[401,500,n[5]]];
   document.getElementById('leaguesList').innerHTML = defs.map(([a,b,name])=>{
     const cur=state.level>=a&&state.level<=b;
-    const hold=`${fmt(reqFor(a))} - ${fmt(reqFor(Math.min(500,b)+ (b<500?1:0)))} ${t('lockedUnit')}`;
-    const max=`${fmt(rewardFor(b))} ${t('perDay')}`;
+    const hold=`${fmtReq(a)} - ${fmtReq(Math.min(500,b)+ (b<500?1:0))} ${t('lockedUnit')}`;
+    const max=`${fmtN(rewardFor(b))} ${t('perDay')}`;
     return `<div class="league-row ${cur?'current':''}"><div><div class="t">${name} ${cur?`<span style="background:#ffd700;color:#000;font-size:11px;padding:3px 8px;border-radius:999px">${t('youHere')}</span>`:''}</div><div class="s">${t('levelWord')} ${a} - ${b}</div></div><div class="r"><b>${max}</b><div>${hold}</div></div></div>`;
   }).join('');
 }
@@ -442,8 +527,8 @@ function renderLevels(){
   let list=[]; for(let l=1;l<=500;l++){ if(levelFilter==='all') list.push(l); else if(levelFilter==='1-100'&&l<=100) list.push(l); else if(levelFilter==='101-200'&&l>100&&l<=200) list.push(l); else if(levelFilter==='201-300'&&l>200&&l<=300) list.push(l); else if(levelFilter==='301-400'&&l>300&&l<=400) list.push(l); else if(levelFilter==='401-500'&&l>400) list.push(l); }
   const show = levelFilter==='all' ? list.slice(0,30) : list;
   document.getElementById('levelsList').innerHTML = show.map(l=>{
-    const req=reqFor(l); const perDay=rewardFor(l); const perHour=(perDay/24).toFixed(1);
-    return `<div class="lvl-row ${l===state.level?'current':''}"><div><div class="l">${t('levelWord')} ${l} ${l===state.level?'• '+t('youHere'):''}</div><div class="s">${perHour} ZYN ${t('perHour')}</div></div><div class="r"><b>${fmt(req)} ZYN</b><div><span>+${fmt(perDay)} ${t('perDay')}</span></div></div></div>`;
+    const req=reqFor(l); const perDay=rewardFor(l); const perHour=(perDay/24).toFixed(2);
+    return `<div class="lvl-row ${l===state.level?'current':''}"><div><div class="l">${t('levelWord')} ${l} ${l===state.level?'• '+t('youHere'):''}</div><div class="s">${perHour} ZYN ${t('perHour')}</div></div><div class="r"><b>${fmtN(req)} ZYN</b><div><span>+${fmtN(perDay)} ${t('perDay')} (${(rateFor(l)*100).toFixed(2)}%)</span></div></div></div>`;
   }).join('') + (levelFilter==='all' ? `<div class="small" style="text-align:center;margin-top:10px">${t('showFirst30')}</div>` : '');
 }
 
@@ -455,7 +540,14 @@ if(window.TON_CONNECT_UI?.TonConnectUI){
     tc.onStatusChange(w=>{
       clearTimeout(connectTimer);
       if(w){ walletAddr=w.account.address; showConnecting(false); showConnectFail(false); render(); checkOnchain(); }
-      else { walletAddr=''; showConnecting(false); render(); }
+      else {
+        // external disconnect (TonConnect menu / Tonkeeper): same reset as disconnectWallet, without calling tc.disconnect again
+        const had = tcReady && (walletAddr || state.onchain>0);
+        tcReady=true;
+        if(had) resetWalletState().then(()=>toast(t('disconnected')));
+        else { walletAddr=''; showConnecting(false); render(); }
+      }
+      tcReady=true;
     });
   }catch(e){ console.warn('TonConnect init failed', e); }
 }else{
@@ -465,5 +557,6 @@ if(window.TON_CONNECT_UI?.TonConnectUI){
 applyI18n();
 auth();
 setInterval(()=>{ if(state.mining) render(); }, 1000);
-setInterval(async()=>{ try{ const a=await api('/api/auth',{uid:userId, username}); if(a.ok){ applyUser(a.user); showApiErr(false); } }catch(e){ showApiErr(true); } render(); }, 30000);
+setInterval(async()=>{ try{ const a=await api('/api/auth',{init_data:tg?.initData||''}); if(a.ok){ if(a.economy) econ=a.economy; if(tcReady && !walletAddr && a.user.onchain>0 && !(a.user.locked>0)){ a.user.onchain=0; a.user.level=0; resetWalletState(); } applyUser(a.user); showApiErr(false); } }catch(e){ showApiErr(true); } render(); }, 30000);
 </script></body></html>
+
